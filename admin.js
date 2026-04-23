@@ -3,7 +3,6 @@ const ADMIN_PASSWORD = 'Klyrastudio@11';
 const STORAGE_PRODUCTS_KEY = 'ks_products';
 const STORAGE_ORDERS_KEY = 'ks_orders';
 const STORAGE_SLIDESHOW_KEY = 'ks_slideshow';
-const STORAGE_SLIDESHOW_KEY = 'ks_slideshow';
 
 const defaultProducts = [
   {
@@ -53,7 +52,6 @@ const slideshowTable = document.getElementById('slideshowTable');
 let products = [];
 let orders = [];
 let slideshowImages = [];
-let slideshowImages = [];
 
 function loadProducts() {
   const saved = localStorage.getItem(STORAGE_PRODUCTS_KEY);
@@ -86,6 +84,7 @@ function generateProductId() {
 }
 
 function renderProductTable() {
+  if (!productTable) return;
   if (!products.length) {
     productTable.innerHTML = '<p class="hint">No products found. Add your first product to start selling.</p>';
     return;
@@ -123,6 +122,7 @@ function renderProductTable() {
 }
 
 function renderSlideshowTable() {
+  if (!slideshowTable) return;
   if (!slideshowImages.length) {
     slideshowTable.innerHTML = '<p class="hint">No slideshow images. Add your first image to start the slideshow.</p>';
     return;
@@ -146,6 +146,47 @@ function renderSlideshowTable() {
         <tr>
           <th>Preview</th>
           <th>URL</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderOrderTable() {
+  if (!orderTable) return;
+  if (!orders.length) {
+    orderTable.innerHTML = '<p class="hint">No order requests yet. Orders will appear after customers submit checkout details.</p>';
+    return;
+  }
+
+  const rows = orders
+    .map((order, index) => `
+      <tr>
+        <td>${order.id}</td>
+        <td>${order.customerName}</td>
+        <td>${order.phone}</td>
+        <td>₹${Number(order.total).toLocaleString()}</td>
+        <td>${order.status}</td>
+        <td>${new Date(order.createdAt).toLocaleString()}</td>
+        <td>
+          <button class="button button-secondary" data-verify="${index}">Verify</button>
+        </td>
+      </tr>
+    `)
+    .join('');
+
+  orderTable.innerHTML = `
+    <table class="order-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Submitted</th>
           <th>Action</th>
         </tr>
       </thead>
