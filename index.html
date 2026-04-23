@@ -19,17 +19,26 @@
       <a href="#products">Products</a>
       <a href="#order">Order</a>
       <a href="#contact">Contact</a>
+      <a href="user.html" class="button button-secondary">My Orders</a>
       <a href="admin.html" class="button button-secondary">Admin</a>
     </nav>
   </header>
 
   <main>
+    <section class="slideshow">
+      <div class="slideshow-container" id="slideshowContainer">
+        <!-- Slides will be added here -->
+      </div>
+      <button class="prev" onclick="changeSlide(-1)">&#10094;</button>
+      <button class="next" onclick="changeSlide(1)">&#10095;</button>
+    </section>
+
     <section class="hero">
       <div class="hero-copy">
         <span class="eyebrow">KlyraStudio Jewelry</span>
         <h2>Professional. Modern. Elegant. Luxury.</h2>
-        <p>Explore handcrafted jewelry pieces curated for your signature style. Purchase through Instagram and complete payment via UPI.</p>
-        <a href="https://www.instagram.com" target="_blank" rel="noopener" class="button button-primary">Shop on Instagram</a>
+        <p>Explore handcrafted jewelry pieces curated for your signature style. Complete payment via UPI after placing your order.</p>
+        <a href="#order" class="button button-primary">Place Order</a>
       </div>
       <div class="hero-feature">
         <div class="feature-card">
@@ -65,7 +74,7 @@
           </label>
           <label>
             Phone Number
-            <input type="tel" id="customerPhone" placeholder="063811 63108" required />
+            <input type="tel" id="customerPhone" placeholder="Enter your number" required />
           </label>
           <label>
             Delivery Address

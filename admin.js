@@ -2,6 +2,8 @@ const ADMIN_USERNAME = 'Klyrastudio11';
 const ADMIN_PASSWORD = 'Klyrastudio@11';
 const STORAGE_PRODUCTS_KEY = 'ks_products';
 const STORAGE_ORDERS_KEY = 'ks_orders';
+const STORAGE_SLIDESHOW_KEY = 'ks_slideshow';
+const STORAGE_SLIDESHOW_KEY = 'ks_slideshow';
 
 const defaultProducts = [
   {
@@ -34,19 +36,24 @@ const defaultProducts = [
   },
 ];
 
-const loginSection = document.getElementById('loginSection');
+const defaultSlideshow = [
+  'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=1200&q=80',
+];
 const dashboardSection = document.getElementById('dashboardSection');
 const logoutButton = document.getElementById('logoutButton');
 const loginForm = document.getElementById('loginForm');
 const productForm = document.getElementById('productForm');
 const productTable = document.getElementById('productTable');
 const orderTable = document.getElementById('orderTable');
-const exportOrders = document.getElementById('exportOrders');
-const copyOrders = document.getElementById('copyOrders');
-const tabButtons = document.querySelectorAll('.tab-button');
+const slideshowForm = document.getElementById('slideshowForm');
+const slideshowTable = document.getElementById('slideshowTable');
 
 let products = [];
 let orders = [];
+let slideshowImages = [];
+let slideshowImages = [];
 
 function loadProducts() {
   const saved = localStorage.getItem(STORAGE_PRODUCTS_KEY);
@@ -61,17 +68,17 @@ function saveProducts() {
   localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(products));
 }
 
-function loadOrders() {
-  const saved = localStorage.getItem(STORAGE_ORDERS_KEY);
+function loadSlideshow() {
+  const saved = localStorage.getItem(STORAGE_SLIDESHOW_KEY);
   try {
-    orders = saved ? JSON.parse(saved) : [];
+    slideshowImages = saved ? JSON.parse(saved) : defaultSlideshow.slice();
   } catch {
-    orders = [];
+    slideshowImages = defaultSlideshow.slice();
   }
 }
 
-function saveOrders() {
-  localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders));
+function saveSlideshow() {
+  localStorage.setItem(STORAGE_SLIDESHOW_KEY, JSON.stringify(slideshowImages));
 }
 
 function generateProductId() {
@@ -85,12 +92,16 @@ function renderProductTable() {
   }
 
   const rows = products
-    .map((product) => `
+    .map((product, index) => `
       <tr>
         <td>${product.name}</td>
         <td>₹${Number(product.price).toLocaleString()}</td>
         <td>${product.category || 'Jewelry'}</td>
         <td>${product.image ? 'Yes' : 'No'}</td>
+        <td>
+          <button class="button button-secondary" data-edit-product="${index}">Edit</button>
+          <button class="button button-secondary" data-delete-product="${index}">Delete</button>
+        </td>
       </tr>
     `)
     .join('');
@@ -103,6 +114,7 @@ function renderProductTable() {
           <th>Price</th>
           <th>Category</th>
           <th>Image</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
@@ -110,38 +122,30 @@ function renderProductTable() {
   `;
 }
 
-function renderOrderTable() {
-  if (!orders.length) {
-    orderTable.innerHTML = '<p class="hint">No order requests yet. Orders will appear after customers submit checkout details.</p>';
+function renderSlideshowTable() {
+  if (!slideshowImages.length) {
+    slideshowTable.innerHTML = '<p class="hint">No slideshow images. Add your first image to start the slideshow.</p>';
     return;
   }
 
-  const rows = orders
-    .map((order, index) => `
+  const rows = slideshowImages
+    .map((image, index) => `
       <tr>
-        <td>${order.id}</td>
-        <td>${order.customerName}</td>
-        <td>${order.phone}</td>
-        <td>₹${Number(order.total).toLocaleString()}</td>
-        <td>${order.status}</td>
-        <td>${new Date(order.createdAt).toLocaleString()}</td>
+        <td><img src="${image}" alt="Slide ${index + 1}" style="width: 100px; height: 60px; object-fit: cover;"></td>
+        <td>${image}</td>
         <td>
-          <button class="button button-secondary" data-verify="${index}">Verify</button>
+          <button class="button button-secondary" data-delete-slide="${index}">Delete</button>
         </td>
       </tr>
     `)
     .join('');
 
-  orderTable.innerHTML = `
-    <table class="order-table">
+  slideshowTable.innerHTML = `
+    <table class="admin-table">
       <thead>
         <tr>
-          <th>Order ID</th>
-          <th>Name</th>
-          <th>Phone</th>
-          <th>Total</th>
-          <th>Status</th>
-          <th>Submitted</th>
+          <th>Preview</th>
+          <th>URL</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -175,6 +179,7 @@ function handleLogin(event) {
     logoutButton.hidden = false;
     renderProductTable();
     renderOrderTable();
+    renderSlideshowTable();
     setTab('productsTab');
     return;
   }
@@ -189,41 +194,45 @@ function handleLogout() {
   loginForm.reset();
 }
 
-function handleProductSave(event) {
+function handleSlideshowSave(event) {
   event.preventDefault();
-  const name = document.getElementById('productName').value.trim();
-  const price = Number(document.getElementById('productPrice').value);
-  const category = document.getElementById('productCategory').value.trim();
-  const image = document.getElementById('productImage').value.trim();
+  const image = document.getElementById('slideshowImage').value.trim();
 
-  if (!name || price <= 0) {
-    alert('Please enter a valid product name and price.');
+  if (!image) {
+    alert('Please enter a valid image URL.');
     return;
   }
 
-  products.unshift({
-    id: generateProductId(),
-    name,
-    price,
-    category,
-    image,
-  });
-  saveProducts();
-  renderProductTable();
-  productForm.reset();
+  slideshowImages.push(image);
+  saveSlideshow();
+  renderSlideshowTable();
+  slideshowForm.reset();
 }
 
-function handleVerifyOrder(index) {
-  const order = orders[index];
-  if (!order) return;
-  if (order.status === 'Payment Verified - Order Placed') {
-    alert('This order has already been verified.');
-    return;
+function handleDeleteProduct(index) {
+  if (confirm('Are you sure you want to delete this product?')) {
+    products.splice(index, 1);
+    saveProducts();
+    renderProductTable();
   }
-  order.status = 'Payment Verified - Order Placed';
-  saveOrders();
-  renderOrderTable();
-  alert(`Order ${order.id} marked as verified.`);
+}
+
+function handleEditProduct(index) {
+  const product = products[index];
+  document.getElementById('productName').value = product.name;
+  document.getElementById('productPrice').value = product.price;
+  document.getElementById('productCategory').value = product.category;
+  document.getElementById('productImage').value = product.image;
+  productForm.dataset.editIndex = index;
+  productForm.querySelector('button').textContent = 'Update Product';
+}
+
+function handleDeleteSlide(index) {
+  if (confirm('Are you sure you want to delete this slideshow image?')) {
+    slideshowImages.splice(index, 1);
+    saveSlideshow();
+    renderSlideshowTable();
+  }
 }
 
 function exportOrdersToCSV() {
@@ -289,8 +298,25 @@ function initAdminEvents() {
   loginForm.addEventListener('submit', handleLogin);
   logoutButton.addEventListener('click', handleLogout);
   productForm.addEventListener('submit', handleProductSave);
+  slideshowForm.addEventListener('submit', handleSlideshowSave);
   exportOrders.addEventListener('click', exportOrdersToCSV);
   copyOrders.addEventListener('click', copyOrdersToClipboard);
+  productTable.addEventListener('click', (event) => {
+    const editButton = event.target.closest('button[data-edit-product]');
+    if (editButton) {
+      handleEditProduct(Number(editButton.dataset.editProduct));
+    }
+    const deleteButton = event.target.closest('button[data-delete-product]');
+    if (deleteButton) {
+      handleDeleteProduct(Number(deleteButton.dataset.deleteProduct));
+    }
+  });
+  slideshowTable.addEventListener('click', (event) => {
+    const deleteButton = event.target.closest('button[data-delete-slide]');
+    if (deleteButton) {
+      handleDeleteSlide(Number(deleteButton.dataset.deleteSlide));
+    }
+  });
   orderTable.addEventListener('click', (event) => {
     const button = event.target.closest('button[data-verify]');
     if (!button) return;
@@ -304,6 +330,7 @@ function initAdminEvents() {
 function initAdmin() {
   loadProducts();
   loadOrders();
+  loadSlideshow();
   initAdminEvents();
 }
 

@@ -4,6 +4,7 @@ const WHATSAPP_NUMBER = '+91 063811 63108';
 const PAYMENT_UPI = 'keerthi8015-2@okaxis';
 const STORAGE_PRODUCTS_KEY = 'ks_products';
 const STORAGE_ORDERS_KEY = 'ks_orders';
+const STORAGE_SLIDESHOW_KEY = 'ks_slideshow';
 
 const defaultProducts = [
   {
@@ -36,8 +37,16 @@ const defaultProducts = [
   },
 ];
 
+const defaultSlideshow = [
+  'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=1200&q=80',
+];
+
 let products = [];
 let cart = [];
+let slideshowImages = [];
+let currentSlide = 0;
 
 const productGrid = document.getElementById('productGrid');
 const cartItems = document.getElementById('cartItems');
@@ -45,17 +54,17 @@ const cartTotal = document.getElementById('cartTotal');
 const orderForm = document.getElementById('orderForm');
 const orderMessage = document.getElementById('orderMessage');
 
-function loadProducts() {
-  const saved = localStorage.getItem(STORAGE_PRODUCTS_KEY);
+function loadSlideshow() {
+  const saved = localStorage.getItem(STORAGE_SLIDESHOW_KEY);
   try {
-    products = saved ? JSON.parse(saved) : defaultProducts;
+    slideshowImages = saved ? JSON.parse(saved) : defaultSlideshow.slice();
   } catch {
-    products = defaultProducts;
+    slideshowImages = defaultSlideshow.slice();
   }
 }
 
-function saveProducts() {
-  localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(products));
+function saveSlideshow() {
+  localStorage.setItem(STORAGE_SLIDESHOW_KEY, JSON.stringify(slideshowImages));
 }
 
 function loadOrders() {
@@ -73,20 +82,21 @@ function saveOrder(order) {
   localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders));
 }
 
-function renderProducts() {
-  productGrid.innerHTML = '';
-  products.forEach((product) => {
-    const card = document.createElement('article');
-    card.className = 'product-card';
-    card.innerHTML = `
-      <div class="product-image" style="background-image:url('${product.image}')"></div>
-      <span class="product-tag">${product.category}</span>
-      <h3>${product.name}</h3>
-      <p class="price">₹${product.price.toLocaleString()}</p>
-      <button class="button button-secondary" data-product-id="${product.id}">Add to Cart</button>
-    `;
-    productGrid.appendChild(card);
+function renderSlideshow() {
+  const container = document.getElementById('slideshowContainer');
+  container.innerHTML = '';
+  slideshowImages.forEach((image, index) => {
+    const slide = document.createElement('div');
+    slide.className = 'slide';
+    slide.style.backgroundImage = `url('${image}')`;
+    if (index === currentSlide) slide.classList.add('active');
+    container.appendChild(slide);
   });
+}
+
+function changeSlide(direction) {
+  currentSlide = (currentSlide + direction + slideshowImages.length) % slideshowImages.length;
+  renderSlideshow();
 }
 
 function renderCart() {
@@ -196,9 +206,12 @@ function initEventListeners() {
 
 function init() {
   loadProducts();
+  loadSlideshow();
   renderProducts();
+  renderSlideshow();
   renderCart();
   initEventListeners();
+  setInterval(() => changeSlide(1), 5000); // Auto slide every 5 seconds
 }
 
 init();
