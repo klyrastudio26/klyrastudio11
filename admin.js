@@ -222,18 +222,29 @@ function handleLogin(event) {
   const password = document.getElementById('adminPassword').value.trim();
 
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    // Hide login completely
     loginSection.style.display = 'none';
     loginSection.hidden = true;
     loginSection.classList.add('hidden');
+    
+    // Show dashboard completely
     dashboardSection.style.display = 'block';
     dashboardSection.hidden = false;
     dashboardSection.classList.remove('hidden');
+    
+    // Show logout button
     logoutButton.style.display = 'block';
     logoutButton.hidden = false;
+    
+    // Clear and render all tables
     renderProductTable();
     renderOrderTable();
     renderSlideshowTable();
     setTab('productsTab');
+    
+    // Scroll to top to see dashboard
+    window.scrollTo(0, 0);
+    
     return;
   }
 

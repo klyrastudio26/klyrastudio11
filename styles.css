@@ -591,6 +591,16 @@ button:hover {
   margin: 0 auto 40px;
 }
 
+/* Admin visibility overrides */
+.admin-login-card.hidden {
+  display: none !important;
+}
+
+.admin-dashboard[hidden],
+.admin-dashboard.hidden {
+  display: none !important;
+}
+
 @media (max-width: 900px) {
   .hero,
   .order-layout,
