@@ -223,7 +223,9 @@ function handleLogin(event) {
 
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
     loginSection.hidden = true;
+    loginSection.classList.add('hidden');
     dashboardSection.hidden = false;
+    dashboardSection.classList.remove('hidden');
     logoutButton.hidden = false;
     renderProductTable();
     renderOrderTable();
@@ -237,7 +239,9 @@ function handleLogin(event) {
 
 function handleLogout() {
   loginSection.hidden = false;
+  loginSection.classList.remove('hidden');
   dashboardSection.hidden = true;
+  dashboardSection.classList.add('hidden');
   logoutButton.hidden = true;
   loginForm.reset();
 }
@@ -434,7 +438,9 @@ function initAdmin() {
   loadOrders();
   loadSlideshow();
   loginSection.hidden = false;
+  loginSection.classList.remove('hidden');
   dashboardSection.hidden = true;
+  dashboardSection.classList.add('hidden');
   logoutButton.hidden = true;
   initAdminEvents();
 }

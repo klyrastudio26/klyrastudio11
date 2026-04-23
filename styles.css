@@ -582,6 +582,10 @@ button:hover {
   display: none !important;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .admin-footer {
   width: min(1180px, calc(100% - 40px));
   margin: 0 auto 40px;
