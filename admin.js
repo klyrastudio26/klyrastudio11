@@ -79,8 +79,13 @@ function saveSlideshow() {
   localStorage.setItem(STORAGE_SLIDESHOW_KEY, JSON.stringify(slideshowImages));
 }
 
-function generateProductId() {
-  return `p${Date.now().toString().slice(-6)}`;
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 function renderProductTable() {
@@ -235,12 +240,23 @@ function handleLogout() {
   loginForm.reset();
 }
 
-function handleSlideshowSave(event) {
+async function handleSlideshowSave(event) {
   event.preventDefault();
-  const image = document.getElementById('slideshowImage').value.trim();
+  const fileInput = document.getElementById('slideshowImage');
+  const urlInput = document.getElementById('slideshowImageUrl');
+  let image = urlInput.value.trim();
+
+  if (fileInput.files.length > 0) {
+    try {
+      image = await readFileAsDataURL(fileInput.files[0]);
+    } catch (error) {
+      alert('Error reading file: ' + error.message);
+      return;
+    }
+  }
 
   if (!image) {
-    alert('Please enter a valid image URL.');
+    alert('Please select a file or enter a URL.');
     return;
   }
 
@@ -266,6 +282,49 @@ function handleEditProduct(index) {
   document.getElementById('productImage').value = product.image;
   productForm.dataset.editIndex = index;
   productForm.querySelector('button').textContent = 'Update Product';
+}
+
+async function handleProductSave(event) {
+  event.preventDefault();
+  const name = document.getElementById('productName').value.trim();
+  const price = Number(document.getElementById('productPrice').value);
+  const category = document.getElementById('productCategory').value.trim();
+  const fileInput = document.getElementById('productImageFile');
+  const urlInput = document.getElementById('productImage');
+  let image = urlInput.value.trim();
+  const editIndex = productForm.dataset.editIndex;
+
+  if (fileInput.files.length > 0) {
+    try {
+      image = await readFileAsDataURL(fileInput.files[0]);
+    } catch (error) {
+      alert('Error reading file: ' + error.message);
+      return;
+    }
+  }
+
+  if (!name || price <= 0) {
+    alert('Please enter a valid product name and price.');
+    return;
+  }
+
+  if (editIndex !== undefined && editIndex !== '') {
+    const idx = Number(editIndex);
+    products[idx] = { ...products[idx], name, price, category, image };
+    delete productForm.dataset.editIndex;
+    productForm.querySelector('button').textContent = 'Save Product';
+  } else {
+    products.unshift({
+      id: generateProductId(),
+      name,
+      price,
+      category,
+      image,
+    });
+  }
+  saveProducts();
+  renderProductTable();
+  productForm.reset();
 }
 
 function handleDeleteSlide(index) {

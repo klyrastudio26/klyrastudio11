@@ -65,8 +65,9 @@
                 <input type="text" id="productCategory" placeholder="Necklace, Ring, Bracelet" />
               </label>
               <label>
-                Image URL
-                <input type="url" id="productImage" placeholder="Optional image URL" />
+                Image URL or Upload
+                <input type="file" id="productImageFile" accept="image/*" />
+                <small>Or enter URL: <input type="url" id="productImage" placeholder="Optional image URL" /></small>
               </label>
               <button type="submit" class="button button-primary">Save Product</button>
             </form>
@@ -97,8 +98,9 @@
             <h3>Add Slideshow Image</h3>
             <form id="slideshowForm" class="admin-form">
               <label>
-                Image URL
-                <input type="url" id="slideshowImage" placeholder="Enter image URL" required />
+                Image URL or Upload
+                <input type="file" id="slideshowImage" accept="image/*" />
+                <small>Or enter URL: <input type="url" id="slideshowImageUrl" placeholder="https://..." /></small>
               </label>
               <button type="submit" class="button button-primary">Add Image</button>
             </form>
