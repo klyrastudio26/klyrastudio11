@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Portal | KlyraStudio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header admin-header">
+    <div class="brand">
+      <span class="logo-mark">K</span>
+      <div>
+        <h1>Admin Portal</h1>
+        <p>KlyraStudio order and product management.</p>
+      </div>
+    </div>
+    <nav>
+      <a href="index.html">Customer Site</a>
+      <button id="logoutButton" class="button button-secondary" hidden>Logout</button>
+    </nav>
+  </header>
+
+  <main class="admin-main">
+    <section id="loginSection" class="admin-card admin-login-card">
+      <h2>Admin Login</h2>
+      <form id="loginForm" class="admin-form">
+        <label>
+          Username
+          <input type="text" id="adminUsername" placeholder="Klyrastudio11" required />
+        </label>
+        <label>
+          Password
+          <input type="password" id="adminPassword" placeholder="Klyrastudio@11" required />
+        </label>
+        <button type="submit" class="button button-primary">Login</button>
+      </form>
+      <p class="hint">Use username <strong>Klyrastudio11</strong> and password <strong>Klyrastudio@11</strong>.</p>
+    </section>
+
+    <section id="dashboardSection" class="admin-card admin-dashboard" hidden>
+      <div class="dashboard-actions">
+        <h2>Admin Dashboard</h2>
+      </div>
+      <div class="admin-tabs">
+        <button class="tab-button active" data-tab="productsTab">Products</button>
+        <button class="tab-button" data-tab="ordersTab">Orders</button>
+      </div>
+
+      <div id="productsTab" class="tab-panel">
+        <div class="admin-grid">
+          <div class="admin-panel">
+            <h3>Add Product</h3>
+            <form id="productForm" class="admin-form">
+              <label>
+                Product Name
+                <input type="text" id="productName" required />
+              </label>
+              <label>
+                Price (INR)
+                <input type="number" id="productPrice" required min="1" />
+              </label>
+              <label>
+                Category
+                <input type="text" id="productCategory" placeholder="Necklace, Ring, Bracelet" />
+              </label>
+              <label>
+                Image URL
+                <input type="url" id="productImage" placeholder="Optional image URL" />
+              </label>
+              <button type="submit" class="button button-primary">Save Product</button>
+            </form>
+          </div>
+          <div class="admin-panel admin-table-panel">
+            <h3>Product Catalog</h3>
+            <div id="productTable" class="table-scroll"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ordersTab" class="tab-panel hidden">
+        <div class="admin-grid">
+          <div class="admin-panel admin-table-panel">
+            <h3>Order Requests</h3>
+            <div class="order-actions">
+              <button id="exportOrders" class="button button-secondary">Export Orders CSV</button>
+              <button id="copyOrders" class="button button-secondary">Copy Orders</button>
+            </div>
+            <div id="orderTable" class="table-scroll"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer admin-footer">
+    <p>Admin access only. Manage products, verify payments, and confirm orders.</p>
+  </footer>
+
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KlyraStudio | Luxury Jewelry</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <span class="logo-mark">K</span>
+      <div>
+        <h1>KlyraStudio</h1>
+        <p>Luxury jewelry designed for modern elegance.</p>
+      </div>
+    </div>
+    <nav>
+      <a href="#products">Products</a>
+      <a href="#order">Order</a>
+      <a href="#contact">Contact</a>
+      <a href="admin.html" class="button button-secondary">Admin</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">KlyraStudio Jewelry</span>
+        <h2>Professional. Modern. Elegant. Luxury.</h2>
+        <p>Explore handcrafted jewelry pieces curated for your signature style. Purchase through Instagram and complete payment via UPI.</p>
+        <a href="https://www.instagram.com" target="_blank" rel="noopener" class="button button-primary">Shop on Instagram</a>
+      </div>
+      <div class="hero-feature">
+        <div class="feature-card">
+          <h3>Featured Collection</h3>
+          <p>Classic statement pieces with premium shine.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="products" class="section">
+      <div class="section-header">
+        <span class="eyebrow">Featured Products</span>
+        <h2>Our Collection</h2>
+      </div>
+      <div id="productGrid" class="product-grid"></div>
+    </section>
+
+    <section id="order" class="section section-alt">
+      <div class="section-header">
+        <span class="eyebrow">Place Your Order</span>
+        <h2>Secure your piece today</h2>
+      </div>
+      <div class="order-layout">
+        <div class="cart-panel">
+          <h3>Your Cart</h3>
+          <div id="cartItems" class="cart-items">No items added yet.</div>
+          <div class="cart-total">Total: <span id="cartTotal">₹0</span></div>
+        </div>
+        <form id="orderForm" class="order-form">
+          <label>
+            Full Name
+            <input type="text" id="customerName" placeholder="Enter your name" required />
+          </label>
+          <label>
+            Phone Number
+            <input type="tel" id="customerPhone" placeholder="063811 63108" required />
+          </label>
+          <label>
+            Delivery Address
+            <textarea id="customerAddress" rows="4" placeholder="Enter your delivery address" required></textarea>
+          </label>
+          <div class="payment-box">
+            <p><strong>Payment UPI ID:</strong></p>
+            <p class="payment-id">keerthi8015-2@okaxis</p>
+            <p>After payment, send the screenshot to WhatsApp:</p>
+            <p class="payment-id">+91 063811 63108</p>
+          </div>
+          <button type="submit" class="button button-primary">Submit Order</button>
+          <p class="hint">Orders are reviewed by the admin before confirmation.</p>
+        </form>
+      </div>
+      <div id="orderMessage" class="order-message"></div>
+    </section>
+
+    <section id="contact" class="section">
+      <div class="section-header">
+        <span class="eyebrow">Contact</span>
+        <h2>Get in Touch</h2>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <h3>Phone</h3>
+          <p>063811 63108</p>
+        </div>
+        <div class="contact-card">
+          <h3>WhatsApp</h3>
+          <p>Send payment screenshot to WhatsApp</p>
+          <p class="payment-id">+91 063811 63108</p>
+        </div>
+        <div class="contact-card">
+          <h3>Instagram</h3>
+          <p>@klyrastudio</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 KlyraStudio. Elegant luxury jewelry for your most memorable moments.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
