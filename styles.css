@@ -214,7 +214,12 @@ button:hover {
 
 .hero-copy h2 {
   font-size: clamp(2.5rem, 4vw, 4rem);
-  margin-bottom: 18px;
+  margin-bottom: 22px;
+}
+
+.hero-copy .button-primary {
+  margin-top: 30px;
+  padding: 16px 32px;
 }
 
 .hero-copy p,

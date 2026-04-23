@@ -103,10 +103,14 @@
             <h3>Add Slideshow Image</h3>
             <form id="slideshowForm" class="admin-form">
               <label>
-                Image URL or Upload
+                Slideshow Image Upload or URL
                 <input type="file" id="slideshowImage" accept="image/*" />
-                <small>Or enter URL: <input type="url" id="slideshowImageUrl" placeholder="https://..." /></small>
               </label>
+              <label>
+                Or enter image URL
+                <input type="url" id="slideshowImageUrl" placeholder="https://..." />
+              </label>
+              <p class="hint">Upload a new slide image or paste a direct image URL.</p>
               <button type="submit" class="button button-primary">Add Image</button>
             </form>
           </div>
