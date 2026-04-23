@@ -48,6 +48,8 @@ const productTable = document.getElementById('productTable');
 const orderTable = document.getElementById('orderTable');
 const slideshowForm = document.getElementById('slideshowForm');
 const slideshowTable = document.getElementById('slideshowTable');
+const loginSection = document.getElementById('loginSection');
+const tabButtons = document.querySelectorAll('.tab-button');
 
 let products = [];
 let orders = [];
@@ -431,6 +433,9 @@ function initAdmin() {
   loadProducts();
   loadOrders();
   loadSlideshow();
+  loginSection.hidden = false;
+  dashboardSection.hidden = true;
+  logoutButton.hidden = true;
   initAdminEvents();
 }
 

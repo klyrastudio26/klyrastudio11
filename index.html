@@ -15,12 +15,17 @@
         <p>Luxury jewelry designed for modern elegance.</p>
       </div>
     </div>
-    <nav>
-      <a href="#products">Products</a>
-      <a href="#order">Order</a>
-      <a href="#contact">Contact</a>
-      <a href="user.html" class="button button-secondary">My Orders</a>
-      <a href="admin.html" class="button button-secondary">Admin</a>
+    <nav class="nav-menu">
+      <div class="dropdown">
+        <button class="button button-secondary dropdown-button">Menu</button>
+        <div class="dropdown-content">
+          <a href="#products">Products</a>
+          <a href="#order">Order</a>
+          <a href="#contact">Contact</a>
+          <a href="user.html">My Orders</a>
+          <a href="admin.html">Admin</a>
+        </div>
+      </div>
     </nav>
   </header>
 
@@ -34,24 +39,18 @@
     </section>
 
     <section class="hero">
-      <div class="hero-copy">
+      <div class="hero-copy hero-copy-wide">
         <span class="eyebrow">KlyraStudio Jewelry</span>
         <h2>Professional. Modern. Elegant. Luxury.</h2>
         <p>Explore handcrafted jewelry pieces curated for your signature style. Complete payment via UPI after placing your order.</p>
         <a href="#order" class="button button-primary">Place Order</a>
       </div>
-      <div class="hero-feature">
-        <div class="feature-card">
-          <h3>Featured Collection</h3>
-          <p>Classic statement pieces with premium shine.</p>
-        </div>
-      </div>
     </section>
 
     <section id="products" class="section">
       <div class="section-header">
-        <span class="eyebrow">Featured Products</span>
-        <h2>Our Collection</h2>
+        <span class="eyebrow">Our Collection</span>
+        <h2>Luxury Jewelry Pieces</h2>
       </div>
       <div id="productGrid" class="product-grid"></div>
     </section>
@@ -84,7 +83,7 @@
             <p><strong>Payment UPI ID:</strong></p>
             <p class="payment-id">keerthi8015-2@okaxis</p>
             <p>After payment, send the screenshot to WhatsApp:</p>
-            <p class="payment-id">+91 063811 63108</p>
+            <p class="payment-id">+91 63811 63108</p>
           </div>
           <button type="submit" class="button button-primary">Submit Order</button>
           <p class="hint">Orders are reviewed by the admin before confirmation.</p>

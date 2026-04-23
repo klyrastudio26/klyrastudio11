@@ -84,6 +84,7 @@ nav {
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  position: relative;
 }
 
 nav a,
@@ -94,6 +95,58 @@ button {
 
 nav a {
   transition: color 0.2s ease;
+}
+
+.nav-menu {
+  position: relative;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-button {
+  display: inline-flex;
+  align-items: center;
+}
+
+.dropdown-content {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  min-width: 220px;
+  background: rgba(12, 10, 14, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  margin-top: 10px;
+  padding: 12px 0;
+  display: none;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  z-index: 50;
+}
+
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content {
+  display: block;
+}
+
+.dropdown-content a,
+.dropdown-content button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 18px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.dropdown-content a:hover,
+.dropdown-content button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
 }
 
 nav a:hover,
@@ -129,13 +182,17 @@ button:hover {
   margin: 0 auto;
   padding: 72px 0 32px;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  grid-template-columns: 1fr;
   gap: 36px;
   align-items: center;
 }
 
 .hero-copy {
-  max-width: 620px;
+  max-width: 760px;
+}
+
+.hero-copy-wide {
+  max-width: 940px;
 }
 
 .eyebrow {
