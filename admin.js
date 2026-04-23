@@ -222,10 +222,13 @@ function handleLogin(event) {
   const password = document.getElementById('adminPassword').value.trim();
 
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    loginSection.style.display = 'none';
     loginSection.hidden = true;
     loginSection.classList.add('hidden');
+    dashboardSection.style.display = 'block';
     dashboardSection.hidden = false;
     dashboardSection.classList.remove('hidden');
+    logoutButton.style.display = 'block';
     logoutButton.hidden = false;
     renderProductTable();
     renderOrderTable();
@@ -238,10 +241,13 @@ function handleLogin(event) {
 }
 
 function handleLogout() {
+  loginSection.style.display = 'block';
   loginSection.hidden = false;
   loginSection.classList.remove('hidden');
+  dashboardSection.style.display = 'none';
   dashboardSection.hidden = true;
   dashboardSection.classList.add('hidden');
+  logoutButton.style.display = 'none';
   logoutButton.hidden = true;
   loginForm.reset();
 }
@@ -437,11 +443,15 @@ function initAdmin() {
   loadProducts();
   loadOrders();
   loadSlideshow();
-  loginSection.hidden = false;
-  loginSection.classList.remove('hidden');
+  
+  // Absolutely ensure dashboard is hidden and login is visible on init
+  loginSection.style.display = 'block';
+  dashboardSection.style.display = 'none';
   dashboardSection.hidden = true;
   dashboardSection.classList.add('hidden');
+  logoutButton.style.display = 'none';
   logoutButton.hidden = true;
+  
   initAdminEvents();
 }
 
