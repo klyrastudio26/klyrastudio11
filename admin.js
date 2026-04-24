@@ -222,12 +222,12 @@ function handleLogin(event) {
   const password = document.getElementById('adminPassword').value.trim();
 
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    // Hide login section
-    loginSection.removeAttribute('hidden');
+    // Hide login section - ADD hidden attribute
+    loginSection.setAttribute('hidden', '');
     loginSection.style.display = 'none';
     loginSection.classList.add('hidden');
     
-    // Show dashboard section
+    // Show dashboard section - REMOVE hidden attribute
     dashboardSection.removeAttribute('hidden');
     dashboardSection.style.display = 'block';
     dashboardSection.classList.remove('hidden');
