@@ -115,7 +115,8 @@ function handleProductSave(event) {
   
   const name = document.getElementById('productName').value.trim();
   const description = document.getElementById('productDescription').value.trim();
-  const price = Number(document.getElementById('productPrice').value);
+  const originalPrice = Number(document.getElementById('productPrice').value);
+  const discountPrice = Number(document.getElementById('discountPrice')?.value) || originalPrice;
   const imageFile = document.getElementById('productImage').files[0];
 
   if (!imageFile) {
@@ -129,7 +130,8 @@ function handleProductSave(event) {
       id: 'p' + Date.now(),
       name,
       description,
-      price,
+      originalPrice,
+      discountPrice: Math.min(discountPrice, originalPrice),
       image: e.target.result
     };
     products.push(product);
@@ -157,13 +159,14 @@ function renderProducts() {
     return;
   }
 
-  let html = '<table class="admin-table"><thead><tr><th>Name</th><th>Price</th><th>Description</th><th>Action</th></tr></thead><tbody>';
+  let html = '<table class="admin-table"><thead><tr><th>Name</th><th>Original Price</th><th>Discount Price</th><th>Description</th><th>Action</th></tr></thead><tbody>';
   
   products.forEach(p => {
     html += `<tr>
       <td>${p.name}</td>
-      <td>₹${p.price.toLocaleString()}</td>
-      <td>${p.description.substring(0, 30)}...</td>
+      <td>₹${p.originalPrice?.toLocaleString() || 'N/A'}</td>
+      <td>₹${p.discountPrice?.toLocaleString() || 'N/A'}</td>
+      <td>${(p.description || '').substring(0, 25)}...</td>
       <td><button class="button button-secondary" onclick="deleteProduct('${p.id}')">Delete</button></td>
     </tr>`;
   });

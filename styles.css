@@ -301,6 +301,41 @@ button:hover {
   margin: 0;
 }
 
+.product-description {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 8px 0;
+}
+
+.product-pricing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.discount-price {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.discount-badge {
+  background: rgba(212, 181, 96, 0.2);
+  color: var(--accent);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .price {
   margin: 0;
   font-size: 1.4rem;

@@ -10,29 +10,33 @@ const defaultProducts = [
   {
     id: 'p001',
     name: 'Luminous Pearl Necklace',
-    category: 'Necklace',
-    price: 2499,
+    description: 'Beautiful pearl necklace with elegant design',
+    originalPrice: 3499,
+    discountPrice: 2499,
     image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'p002',
     name: 'Golden Aura Ring',
-    category: 'Ring',
-    price: 1799,
+    description: 'Stunning golden ring for special occasions',
+    originalPrice: 2299,
+    discountPrice: 1799,
     image: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'p003',
     name: 'Velvet Luxe Bracelet',
-    category: 'Bracelet',
-    price: 2099,
+    description: 'Premium bracelet with luxury finish',
+    originalPrice: 2899,
+    discountPrice: 2099,
     image: 'https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'p004',
     name: 'Radiant Solitaire Earrings',
-    category: 'Earrings',
-    price: 1549,
+    description: 'Exquisite earrings with sparkling stones',
+    originalPrice: 2299,
+    discountPrice: 1549,
     image: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=800&q=80',
   },
 ];
@@ -54,6 +58,15 @@ const cartItems = document.getElementById('cartItems');
 const cartTotal = document.getElementById('cartTotal');
 const orderForm = document.getElementById('orderForm');
 const orderMessage = document.getElementById('orderMessage');
+
+function loadProducts() {
+  const saved = localStorage.getItem(STORAGE_PRODUCTS_KEY);
+  products = saved ? JSON.parse(saved) : [...defaultProducts];
+}
+
+function saveProducts() {
+  localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(products));
+}
 
 function loadSlideshow() {
   const saved = localStorage.getItem(STORAGE_SLIDESHOW_KEY);
@@ -81,6 +94,27 @@ function saveOrder(order) {
   const orders = loadOrders();
   orders.unshift(order);
   localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders));
+}
+
+function renderProducts() {
+  productGrid.innerHTML = '';
+  products.forEach(product => {
+    const discountPercent = Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100);
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <div class="product-image" style="background-image: url('${product.image}')"></div>
+      <h3>${product.name}</h3>
+      <p class="product-description">${product.description || ''}</p>
+      <div class="product-pricing">
+        <span class="original-price">₹${product.originalPrice.toLocaleString()}</span>
+        <span class="discount-price">₹${product.discountPrice.toLocaleString()}</span>
+        <span class="discount-badge">-${discountPercent}%</span>
+      </div>
+      <button class="button button-primary" data-product-id="${product.id}">Add to Cart</button>
+    `;
+    productGrid.appendChild(card);
+  });
 }
 
 function renderSlideshow() {
@@ -114,14 +148,15 @@ function renderCart() {
     line.innerHTML = `
       <span>${item.name} × ${item.quantity}</span>
       <span>
-        ₹${(item.price * item.quantity).toLocaleString()} 
+        ₹${((item.discountPrice || item.price) * item.quantity).toLocaleString()} 
         <button data-remove="${index}">Remove</button>
       </span>
     `;
     cartItems.appendChild(line);
   });
 
-  cartTotal.textContent = `₹${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toLocaleString()}`;
+  const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price) * item.quantity, 0);
+  cartTotal.textContent = `₹${total.toLocaleString()}`;
 }
 
 function addProductToCart(productId) {
@@ -131,7 +166,7 @@ function addProductToCart(productId) {
   if (existing) {
     existing.quantity += 1;
   } else {
-    cart.push({ ...product, quantity: 1 });
+    cart.push({ ...product, quantity: 1, price: product.discountPrice });
   }
   renderCart();
 }
@@ -167,14 +202,15 @@ function handleCheckout(event) {
     return;
   }
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price) * item.quantity, 0);
   const order = {
     id: generateOrderId(),
-    customerName: name,
+    name,
     phone,
     address,
     items: cart,
     total,
+    verified: false,
     status: 'Awaiting Payment Verification',
     paymentMethod: PAYMENT_UPI,
     whatsapp: WHATSAPP_NUMBER,
