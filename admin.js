@@ -68,6 +68,19 @@ function saveProducts() {
   localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(products));
 }
 
+function loadOrders() {
+  const saved = localStorage.getItem(STORAGE_ORDERS_KEY);
+  try {
+    orders = saved ? JSON.parse(saved) : [];
+  } catch {
+    orders = [];
+  }
+}
+
+function saveOrders() {
+  localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders));
+}
+
 function loadSlideshow() {
   const saved = localStorage.getItem(STORAGE_SLIDESHOW_KEY);
   try {
