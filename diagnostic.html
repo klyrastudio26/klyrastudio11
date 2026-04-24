@@ -1,0 +1,208 @@
+<!--
+KlyraStudio - Admin + Customer Data Diagnostic Page
+This page helps debug data sync issues between storefront and admin
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KlyraStudio Diagnostic</title>
+  <style>
+    body {
+      background: #08060b;
+      color: #f4ede9;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      color: #d4b560;
+      margin-top: 0;
+    }
+    .data-box {
+      background: rgba(0,0,0,0.3);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      font-family: monospace;
+      overflow-x: auto;
+      font-size: 0.9rem;
+    }
+    button {
+      background: #d4b560;
+      color: #08060b;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 5px;
+    }
+    button:hover { background: #e0c570; }
+    .success { color: #a9d6a9; }
+    .error { color: #ff9999; }
+    .warning { color: #ffd699; }
+  </style>
+</head>
+<body>
+
+<div style="text-align: center; margin-bottom: 30px;">
+  <h1>🔍 KlyraStudio Diagnostic Center</h1>
+  <p>Check data sync between storefront and admin</p>
+</div>
+
+<div class="section">
+  <h2>📊 Data Status</h2>
+  <div id="statusBox" class="data-box">Loading...</div>
+  <button onclick="checkData()">🔄 Refresh Data</button>
+  <button onclick="clearAllData()">🗑️ Clear All Data (START FRESH)</button>
+</div>
+
+<div class="section">
+  <h2>📦 Products</h2>
+  <div id="productsBox" class="data-box">Loading...</div>
+</div>
+
+<div class="section">
+  <h2>🛒 Orders</h2>
+  <div id="ordersBox" class="data-box">Loading...</div>
+</div>
+
+<div class="section">
+  <h2>🎬 Slideshow</h2>
+  <div id="slideshowBox" class="data-box">Loading...</div>
+</div>
+
+<div class="section">
+  <h2>⚡ Test Functions</h2>
+  <button onclick="testAddProduct()">+ Add Test Product</button>
+  <button onclick="testAddOrder()">+ Add Test Order</button>
+  <button onclick="testAddSlide()">+ Add Test Slide</button>
+  <button onclick="syncData()">🔗 Sync All Data</button>
+  <div id="testBox" class="data-box" style="margin-top: 15px;">Ready for testing</div>
+</div>
+
+<script>
+const PRODUCTS_KEY = 'ks_products';
+const ORDERS_KEY = 'ks_orders';
+const SLIDESHOW_KEY = 'ks_slideshow';
+
+function log(msg, type = 'normal') {
+  const box = document.getElementById('testBox');
+  const time = new Date().toLocaleTimeString();
+  const color = type === 'success' ? 'green' : type === 'error' ? 'red' : 'yellow';
+  box.innerHTML = `<span style="color: ${color};">[${time}] ${msg}</span><br>` + box.innerHTML;
+}
+
+function checkData() {
+  const products = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+  const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+  const slideshow = JSON.parse(localStorage.getItem(SLIDESHOW_KEY) || '[]');
+
+  document.getElementById('statusBox').innerHTML = `
+    <span class="success">✅ Data Check Complete</span><br>
+    Products: ${products.length}<br>
+    Orders: ${orders.length}<br>
+    Slideshow Images: ${slideshow.length}
+  `;
+
+  document.getElementById('productsBox').innerHTML = `
+    <strong>Total Products: ${products.length}</strong><br>
+    ${products.length ? products.map(p => `<div>🔹 ${p.name} - ₹${p.discountPrice || p.price}</div>`).join('') : '<span class="warning">No products yet</span>'}
+  `;
+
+  document.getElementById('ordersBox').innerHTML = `
+    <strong>Total Orders: ${orders.length}</strong><br>
+    ${orders.length ? orders.map((o, i) => `<div>🔹 #${i+1} ${o.name} (${o.phone}) - ₹${o.total} - ${o.verified ? '✅ VERIFIED' : '⏳ PENDING'}</div>`).join('') : '<span class="warning">No orders yet</span>'}
+  `;
+
+  document.getElementById('slideshowBox').innerHTML = `
+    <strong>Total Slideshow Images: ${slideshow.length}</strong><br>
+    ${slideshow.length ? slideshow.map((s, i) => `<div>🔹 Image ${i+1} (${Math.round(s.length/1024)} KB)</div>`).join('') : '<span class="warning">No slideshow images yet</span>'}
+  `;
+
+  log('Data checked successfully', 'success');
+}
+
+function testAddProduct() {
+  const products = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+  const newProduct = {
+    id: 'test_' + Date.now(),
+    name: 'Test Product ' + (products.length + 1),
+    description: 'Test product for diagnostics',
+    originalPrice: 5000,
+    discountPrice: 3500,
+    image: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23d4b560%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23000%22%3ETest%3C/text%3E%3C/svg%3E'
+  };
+  products.push(newProduct);
+  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+  log(`✅ Test product added! Total: ${products.length}`, 'success');
+  checkData();
+}
+
+function testAddOrder() {
+  const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+  const newOrder = {
+    id: `KS-${Date.now().toString().slice(-6)}`,
+    name: 'Test Customer',
+    phone: '9876543210',
+    address: '123 Test Street, Test City',
+    items: [{id: 'p001', name: 'Test Item', discountPrice: 1000, quantity: 2}],
+    total: 2000,
+    verified: false,
+    createdAt: new Date().toISOString()
+  };
+  orders.push(newOrder);
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+  log(`✅ Test order added! Total: ${orders.length}`, 'success');
+  checkData();
+}
+
+function testAddSlide() {
+  const slideshow = JSON.parse(localStorage.getItem(SLIDESHOW_KEY) || '[]');
+  const testImage = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%23d4b560;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%2308060b;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%22400%22 height=%22300%22 fill=%22url(%23grad)%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-size=%2224%22%3ESlideshow %23' + (slideshow.length + 1) + '%3C/text%3E%3C/svg%3E';
+  slideshow.push(testImage);
+  localStorage.setItem(SLIDESHOW_KEY, JSON.stringify(slideshow));
+  log(`✅ Test slide added! Total: ${slideshow.length}`, 'success');
+  checkData();
+}
+
+function clearAllData() {
+  if (confirm('⚠️ This will DELETE ALL DATA! Are you sure?')) {
+    localStorage.removeItem(PRODUCTS_KEY);
+    localStorage.removeItem(ORDERS_KEY);
+    localStorage.removeItem(SLIDESHOW_KEY);
+    log('🗑️ All data cleared! Refresh pages to see defaults.', 'error');
+    checkData();
+  }
+}
+
+function syncData() {
+  const p = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+  const o = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+  const s = JSON.parse(localStorage.getItem(SLIDESHOW_KEY) || '[]');
+  
+  // Just re-save to ensure consistency
+  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(p));
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(o));
+  localStorage.setItem(SLIDESHOW_KEY, JSON.stringify(s));
+  
+  log(`🔗 Data synced! Products: ${p.length}, Orders: ${o.length}, Slides: ${s.length}`, 'success');
+  checkData();
+}
+
+// Initial check
+checkData();
+</script>
+
+</body>
+</html>
