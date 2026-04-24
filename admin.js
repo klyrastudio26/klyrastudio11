@@ -222,19 +222,19 @@ function handleLogin(event) {
   const password = document.getElementById('adminPassword').value.trim();
 
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    // Hide login completely
+    // Hide login section
+    loginSection.removeAttribute('hidden');
     loginSection.style.display = 'none';
-    loginSection.hidden = true;
     loginSection.classList.add('hidden');
     
-    // Show dashboard completely
+    // Show dashboard section
+    dashboardSection.removeAttribute('hidden');
     dashboardSection.style.display = 'block';
-    dashboardSection.hidden = false;
     dashboardSection.classList.remove('hidden');
     
     // Show logout button
+    logoutButton.removeAttribute('hidden');
     logoutButton.style.display = 'block';
-    logoutButton.hidden = false;
     
     // Clear and render all tables
     renderProductTable();
@@ -244,6 +244,7 @@ function handleLogin(event) {
     
     // Scroll to top to see dashboard
     window.scrollTo(0, 0);
+    console.log('✅ Login successful - dashboard should be visible now');
     
     return;
   }
@@ -252,15 +253,26 @@ function handleLogin(event) {
 }
 
 function handleLogout() {
+  // Show login section
+  loginSection.removeAttribute('hidden');
   loginSection.style.display = 'block';
-  loginSection.hidden = false;
   loginSection.classList.remove('hidden');
+  
+  // Hide dashboard section
+  dashboardSection.setAttribute('hidden', '');
   dashboardSection.style.display = 'none';
-  dashboardSection.hidden = true;
   dashboardSection.classList.add('hidden');
+  
+  // Hide logout button
+  logoutButton.setAttribute('hidden', '');
   logoutButton.style.display = 'none';
-  logoutButton.hidden = true;
+  
+  // Reset form
   loginForm.reset();
+  
+  // Scroll to top to see login form
+  window.scrollTo(0, 0);
+  console.log('✅ Logout successful - login form should be visible now');
 }
 
 async function handleSlideshowSave(event) {
@@ -455,13 +467,17 @@ function initAdmin() {
   loadOrders();
   loadSlideshow();
   
-  // Absolutely ensure dashboard is hidden and login is visible on init
+  // Ensure dashboard is hidden and login is visible on page load
+  loginSection.removeAttribute('hidden');
   loginSection.style.display = 'block';
+  loginSection.classList.remove('hidden');
+  
+  dashboardSection.setAttribute('hidden', '');
   dashboardSection.style.display = 'none';
-  dashboardSection.hidden = true;
   dashboardSection.classList.add('hidden');
+  
+  logoutButton.setAttribute('hidden', '');
   logoutButton.style.display = 'none';
-  logoutButton.hidden = true;
   
   initAdminEvents();
 }
