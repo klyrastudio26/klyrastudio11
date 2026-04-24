@@ -27,6 +27,7 @@
   </header>
 
   <main class="admin-main">
+    <!-- LOGIN SECTION -->
     <section id="loginSection" class="admin-card admin-login-card">
       <h2>Admin Login</h2>
       <form id="loginForm" class="admin-form">
@@ -42,16 +43,20 @@
       </form>
     </section>
 
+    <!-- DASHBOARD SECTION -->
     <section id="dashboardSection" class="admin-card admin-dashboard" hidden>
-      <div class="dashboard-actions">
+      <div class="dashboard-header">
         <h2>Admin Dashboard</h2>
+        <button id="logoutButtonDash" class="button button-secondary">Logout</button>
       </div>
+
       <div class="admin-tabs">
         <button class="tab-button active" data-tab="productsTab">Products</button>
         <button class="tab-button" data-tab="ordersTab">Orders</button>
         <button class="tab-button" data-tab="slideshowTab">Slideshow</button>
       </div>
 
+      <!-- PRODUCTS TAB -->
       <div id="productsTab" class="tab-panel">
         <div class="admin-grid">
           <div class="admin-panel">
@@ -62,56 +67,46 @@
                 <input type="text" id="productName" required />
               </label>
               <label>
+                Description
+                <textarea id="productDescription" rows="3" placeholder="Product description"></textarea>
+              </label>
+              <label>
                 Price (INR)
                 <input type="number" id="productPrice" required min="1" />
               </label>
               <label>
-                Category
-                <input type="text" id="productCategory" placeholder="Necklace, Ring, Bracelet" />
-              </label>
-              <label>
-                Image URL or Upload
-                <input type="file" id="productImageFile" accept="image/*" />
-                <small>Or enter URL: <input type="url" id="productImage" placeholder="Optional image URL" /></small>
+                Product Image
+                <input type="file" id="productImage" accept="image/*" required />
               </label>
               <button type="submit" class="button button-primary">Save Product</button>
             </form>
           </div>
           <div class="admin-panel admin-table-panel">
-            <h3>Product Catalog</h3>
+            <h3>Product List</h3>
             <div id="productTable" class="table-scroll"></div>
           </div>
         </div>
       </div>
 
+      <!-- ORDERS TAB -->
       <div id="ordersTab" class="tab-panel hidden">
-        <div class="admin-grid">
-          <div class="admin-panel admin-table-panel">
-            <h3>Order Requests</h3>
-            <div class="order-actions">
-              <button id="exportOrders" class="button button-secondary">Export Orders CSV</button>
-              <button id="copyOrders" class="button button-secondary">Copy Orders</button>
-            </div>
-            <div id="orderTable" class="table-scroll"></div>
-          </div>
+        <div class="admin-panel admin-table-panel full-width">
+          <h3>Customer Orders</h3>
+          <div id="orderTable" class="table-scroll"></div>
         </div>
       </div>
 
+      <!-- SLIDESHOW TAB -->
       <div id="slideshowTab" class="tab-panel hidden">
         <div class="admin-grid">
           <div class="admin-panel">
             <h3>Add Slideshow Image</h3>
             <form id="slideshowForm" class="admin-form">
               <label>
-                Slideshow Image Upload or URL
-                <input type="file" id="slideshowImage" accept="image/*" />
+                Slideshow Image
+                <input type="file" id="slideshowImage" accept="image/*" required />
               </label>
-              <label>
-                Or enter image URL
-                <input type="url" id="slideshowImageUrl" placeholder="https://..." />
-              </label>
-              <p class="hint">Upload a new slide image or paste a direct image URL.</p>
-              <button type="submit" class="button button-primary">Add Image</button>
+              <button type="submit" class="button button-primary">Upload</button>
             </form>
           </div>
           <div class="admin-panel admin-table-panel">
@@ -122,10 +117,6 @@
       </div>
     </section>
   </main>
-
-  <footer class="site-footer admin-footer">
-    <p>Admin access only. Manage products, verify payments, and confirm orders.</p>
-  </footer>
 
   <script src="admin.js"></script>
 </body>

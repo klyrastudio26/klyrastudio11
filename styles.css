@@ -520,10 +520,24 @@ button:hover {
   display: grid;
 }
 
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.dashboard-header h2 {
+  margin: 0;
+}
+
+
 .admin-tabs {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 
 .tab-button {
@@ -533,6 +547,11 @@ button:hover {
   padding: 12px 20px;
   border-radius: 999px;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  background: rgba(212, 181, 96, 0.1);
 }
 
 .tab-button.active {
@@ -540,10 +559,34 @@ button:hover {
   border-color: rgba(212, 181, 96, 0.4);
 }
 
+.tab-panel {
+  display: grid;
+}
+
+.tab-panel[hidden] {
+  display: none;
+}
+
 .admin-grid {
   display: grid;
   gap: 24px;
   grid-template-columns: 1fr 1.2fr;
+}
+
+.admin-grid.full-width {
+  grid-template-columns: 1fr;
+}
+
+.admin-panel {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.admin-panel h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
 }
 
 .admin-table-panel {

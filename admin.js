@@ -1,481 +1,306 @@
+// Constants
 const ADMIN_USERNAME = 'Klyrastudio11';
 const ADMIN_PASSWORD = 'Klyrastudio@11';
-const STORAGE_PRODUCTS_KEY = 'ks_products';
-const STORAGE_ORDERS_KEY = 'ks_orders';
-const STORAGE_SLIDESHOW_KEY = 'ks_slideshow';
+const PRODUCTS_KEY = 'ks_products';
+const ORDERS_KEY = 'ks_orders';
+const SLIDESHOW_KEY = 'ks_slideshow';
 
+// Default products
 const defaultProducts = [
   {
     id: 'p001',
     name: 'Luminous Pearl Necklace',
-    category: 'Necklace',
+    description: 'Beautiful pearl necklace with elegant design',
     price: 2499,
-    image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'p002',
     name: 'Golden Aura Ring',
-    category: 'Ring',
+    description: 'Stunning golden ring for special occasions',
     price: 1799,
-    image: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 'p003',
     name: 'Velvet Luxe Bracelet',
-    category: 'Bracelet',
+    description: 'Premium bracelet with luxury finish',
     price: 2099,
-    image: 'https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 'p004',
-    name: 'Radiant Solitaire Earrings',
-    category: 'Earrings',
-    price: 1549,
-    image: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=800&q=80',
-  },
+    image: 'https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?auto=format&fit=crop&w=800&q=80'
+  }
 ];
 
+// Default slideshow images
 const defaultSlideshow = [
   'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=80',
-  'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=1200&q=80'
 ];
-const dashboardSection = document.getElementById('dashboardSection');
-const logoutButton = document.getElementById('logoutButton');
-const loginForm = document.getElementById('loginForm');
-const productForm = document.getElementById('productForm');
-const productTable = document.getElementById('productTable');
-const orderTable = document.getElementById('orderTable');
-const slideshowForm = document.getElementById('slideshowForm');
-const slideshowTable = document.getElementById('slideshowTable');
-const loginSection = document.getElementById('loginSection');
-const tabButtons = document.querySelectorAll('.tab-button');
 
+// Data arrays
 let products = [];
 let orders = [];
-let slideshowImages = [];
+let slideshow = [];
 
+// DOM Elements
+const loginSection = document.getElementById('loginSection');
+const dashboardSection = document.getElementById('dashboardSection');
+const loginForm = document.getElementById('loginForm');
+const logoutButton = document.getElementById('logoutButton');
+const logoutButtonDash = document.getElementById('logoutButtonDash');
+const productForm = document.getElementById('productForm');
+const productTable = document.getElementById('productTable');
+const slideshowForm = document.getElementById('slideshowForm');
+const slideshowTable = document.getElementById('slideshowTable');
+const orderTable = document.getElementById('orderTable');
+const tabButtons = document.querySelectorAll('.tab-button');
+
+// ============ LOAD & SAVE FUNCTIONS ============
 function loadProducts() {
-  const saved = localStorage.getItem(STORAGE_PRODUCTS_KEY);
-  try {
-    products = saved ? JSON.parse(saved) : defaultProducts.slice();
-  } catch {
-    products = defaultProducts.slice();
-  }
+  const saved = localStorage.getItem(PRODUCTS_KEY);
+  products = saved ? JSON.parse(saved) : [...defaultProducts];
 }
 
 function saveProducts() {
-  localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(products));
+  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
 }
 
 function loadOrders() {
-  const saved = localStorage.getItem(STORAGE_ORDERS_KEY);
-  try {
-    orders = saved ? JSON.parse(saved) : [];
-  } catch {
-    orders = [];
-  }
+  const saved = localStorage.getItem(ORDERS_KEY);
+  orders = saved ? JSON.parse(saved) : [];
 }
 
 function saveOrders() {
-  localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders));
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
 }
 
 function loadSlideshow() {
-  const saved = localStorage.getItem(STORAGE_SLIDESHOW_KEY);
-  try {
-    slideshowImages = saved ? JSON.parse(saved) : defaultSlideshow.slice();
-  } catch {
-    slideshowImages = defaultSlideshow.slice();
-  }
+  const saved = localStorage.getItem(SLIDESHOW_KEY);
+  slideshow = saved ? JSON.parse(saved) : [...defaultSlideshow];
 }
 
 function saveSlideshow() {
-  localStorage.setItem(STORAGE_SLIDESHOW_KEY, JSON.stringify(slideshowImages));
+  localStorage.setItem(SLIDESHOW_KEY, JSON.stringify(slideshow));
 }
 
-function readFileAsDataURL(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function renderProductTable() {
-  if (!productTable) return;
-  if (!products.length) {
-    productTable.innerHTML = '<p class="hint">No products found. Add your first product to start selling.</p>';
-    return;
-  }
-
-  const rows = products
-    .map((product, index) => `
-      <tr>
-        <td>${product.name}</td>
-        <td>₹${Number(product.price).toLocaleString()}</td>
-        <td>${product.category || 'Jewelry'}</td>
-        <td>${product.image ? 'Yes' : 'No'}</td>
-        <td>
-          <button class="button button-secondary" data-edit-product="${index}">Edit</button>
-          <button class="button button-secondary" data-delete-product="${index}">Delete</button>
-        </td>
-      </tr>
-    `)
-    .join('');
-
-  productTable.innerHTML = `
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>Price</th>
-          <th>Category</th>
-          <th>Image</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
-}
-
-function renderSlideshowTable() {
-  if (!slideshowTable) return;
-  if (!slideshowImages.length) {
-    slideshowTable.innerHTML = '<p class="hint">No slideshow images. Add your first image to start the slideshow.</p>';
-    return;
-  }
-
-  const rows = slideshowImages
-    .map((image, index) => `
-      <tr>
-        <td><img src="${image}" alt="Slide ${index + 1}" style="width: 100px; height: 60px; object-fit: cover;"></td>
-        <td>${image}</td>
-        <td>
-          <button class="button button-secondary" data-delete-slide="${index}">Delete</button>
-        </td>
-      </tr>
-    `)
-    .join('');
-
-  slideshowTable.innerHTML = `
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Preview</th>
-          <th>URL</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
-}
-
-function renderOrderTable() {
-  if (!orderTable) return;
-  if (!orders.length) {
-    orderTable.innerHTML = '<p class="hint">No order requests yet. Orders will appear after customers submit checkout details.</p>';
-    return;
-  }
-
-  const rows = orders
-    .map((order, index) => `
-      <tr>
-        <td>${order.id}</td>
-        <td>${order.customerName}</td>
-        <td>${order.phone}</td>
-        <td>₹${Number(order.total).toLocaleString()}</td>
-        <td>${order.status}</td>
-        <td>${new Date(order.createdAt).toLocaleString()}</td>
-        <td>
-          <button class="button button-secondary" data-verify="${index}">Verify</button>
-        </td>
-      </tr>
-    `)
-    .join('');
-
-  orderTable.innerHTML = `
-    <table class="order-table">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Name</th>
-          <th>Phone</th>
-          <th>Total</th>
-          <th>Status</th>
-          <th>Submitted</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
-}
-
-function setTab(activeTab) {
-  tabButtons.forEach((button) => {
-    const tabName = button.dataset.tab;
-    const panel = document.getElementById(tabName);
-    if (tabName === activeTab) {
-      button.classList.add('active');
-      panel.classList.remove('hidden');
-    } else {
-      button.classList.remove('active');
-      panel.classList.add('hidden');
-    }
-  });
-}
-
+// ============ LOGIN FUNCTIONS ============
 function handleLogin(event) {
   event.preventDefault();
   const username = document.getElementById('adminUsername').value.trim();
   const password = document.getElementById('adminPassword').value.trim();
 
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    // Hide login section
-    loginSection.setAttribute('hidden', '');
-    
-    // Show dashboard section
-    dashboardSection.removeAttribute('hidden');
-    
-    // Show logout button
-    logoutButton.removeAttribute('hidden');
-    
-    // Clear and render all tables
-    renderProductTable();
-    renderOrderTable();
-    renderSlideshowTable();
-    setTab('productsTab');
-    
-    // Scroll to top to see dashboard
-    window.scrollTo(0, 0);
-    console.log('✅ Login successful - dashboard should be visible now');
-    
-    return;
+    loginSection.hidden = true;
+    dashboardSection.hidden = false;
+    renderProducts();
+    renderOrders();
+    renderSlideshow();
+    switchTab('productsTab');
+  } else {
+    alert('❌ Invalid username or password!');
+    loginForm.reset();
   }
-
-  alert('Invalid admin credentials. Please try again.');
 }
 
 function handleLogout() {
-  // Show login section
-  loginSection.removeAttribute('hidden');
-  
-  // Hide dashboard section
-  dashboardSection.setAttribute('hidden', '');
-  
-  // Hide logout button
-  logoutButton.setAttribute('hidden', '');
-  
-  // Reset form
+  loginSection.hidden = false;
+  dashboardSection.hidden = true;
   loginForm.reset();
-  
-  // Scroll to top to see login form
   window.scrollTo(0, 0);
-  console.log('✅ Logout successful - login form should be visible now');
 }
 
-async function handleSlideshowSave(event) {
+// ============ PRODUCT FUNCTIONS ============
+function handleProductSave(event) {
   event.preventDefault();
-  const fileInput = document.getElementById('slideshowImage');
-  const urlInput = document.getElementById('slideshowImageUrl');
-  let image = urlInput.value.trim();
-
-  if (fileInput.files.length > 0) {
-    try {
-      image = await readFileAsDataURL(fileInput.files[0]);
-    } catch (error) {
-      alert('Error reading file: ' + error.message);
-      return;
-    }
-  }
-
-  if (!image) {
-    alert('Please select a file or enter a URL.');
-    return;
-  }
-
-  slideshowImages.push(image);
-  saveSlideshow();
-  renderSlideshowTable();
-  slideshowForm.reset();
-}
-
-function handleDeleteProduct(index) {
-  if (confirm('Are you sure you want to delete this product?')) {
-    products.splice(index, 1);
-    saveProducts();
-    renderProductTable();
-  }
-}
-
-function handleEditProduct(index) {
-  const product = products[index];
-  document.getElementById('productName').value = product.name;
-  document.getElementById('productPrice').value = product.price;
-  document.getElementById('productCategory').value = product.category;
-  document.getElementById('productImage').value = product.image;
-  productForm.dataset.editIndex = index;
-  productForm.querySelector('button').textContent = 'Update Product';
-}
-
-async function handleProductSave(event) {
-  event.preventDefault();
+  
   const name = document.getElementById('productName').value.trim();
+  const description = document.getElementById('productDescription').value.trim();
   const price = Number(document.getElementById('productPrice').value);
-  const category = document.getElementById('productCategory').value.trim();
-  const fileInput = document.getElementById('productImageFile');
-  const urlInput = document.getElementById('productImage');
-  let image = urlInput.value.trim();
-  const editIndex = productForm.dataset.editIndex;
+  const imageFile = document.getElementById('productImage').files[0];
 
-  if (fileInput.files.length > 0) {
-    try {
-      image = await readFileAsDataURL(fileInput.files[0]);
-    } catch (error) {
-      alert('Error reading file: ' + error.message);
-      return;
-    }
-  }
-
-  if (!name || price <= 0) {
-    alert('Please enter a valid product name and price.');
+  if (!imageFile) {
+    alert('Please select an image!');
     return;
   }
 
-  if (editIndex !== undefined && editIndex !== '') {
-    const idx = Number(editIndex);
-    products[idx] = { ...products[idx], name, price, category, image };
-    delete productForm.dataset.editIndex;
-    productForm.querySelector('button').textContent = 'Save Product';
-  } else {
-    products.unshift({
-      id: generateProductId(),
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const product = {
+      id: 'p' + Date.now(),
       name,
+      description,
       price,
-      category,
-      image,
-    });
-  }
-  saveProducts();
-  renderProductTable();
-  productForm.reset();
+      image: e.target.result
+    };
+    products.push(product);
+    saveProducts();
+    productForm.reset();
+    renderProducts();
+    alert('✅ Product added successfully!');
+  };
+  reader.readAsDataURL(imageFile);
 }
 
-function handleDeleteSlide(index) {
-  if (confirm('Are you sure you want to delete this slideshow image?')) {
-    slideshowImages.splice(index, 1);
+function deleteProduct(id) {
+  if (confirm('Delete this product?')) {
+    products = products.filter(p => p.id !== id);
+    saveProducts();
+    renderProducts();
+  }
+}
+
+function renderProducts() {
+  if (!productTable) return;
+  
+  if (products.length === 0) {
+    productTable.innerHTML = '<p class="hint">No products yet. Add your first product!</p>';
+    return;
+  }
+
+  let html = '<table class="admin-table"><thead><tr><th>Name</th><th>Price</th><th>Description</th><th>Action</th></tr></thead><tbody>';
+  
+  products.forEach(p => {
+    html += `<tr>
+      <td>${p.name}</td>
+      <td>₹${p.price.toLocaleString()}</td>
+      <td>${p.description.substring(0, 30)}...</td>
+      <td><button class="button button-secondary" onclick="deleteProduct('${p.id}')">Delete</button></td>
+    </tr>`;
+  });
+  
+  html += '</tbody></table>';
+  productTable.innerHTML = html;
+}
+
+// ============ ORDER FUNCTIONS ============
+function renderOrders() {
+  if (!orderTable) return;
+  
+  if (orders.length === 0) {
+    orderTable.innerHTML = '<p class="hint">No orders yet.</p>';
+    return;
+  }
+
+  let html = '<table class="admin-table"><thead><tr><th>Customer</th><th>Phone</th><th>Address</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+  
+  orders.forEach((order, idx) => {
+    const statusText = order.verified ? '✅ Verified' : '⏳ Pending';
+    html += `<tr>
+      <td>${order.name}</td>
+      <td>${order.phone}</td>
+      <td>${order.address.substring(0, 20)}...</td>
+      <td>₹${order.total.toLocaleString()}</td>
+      <td>${statusText}</td>
+      <td>${!order.verified ? `<button class="button button-secondary" onclick="verifyOrder(${idx})">Verify</button>` : '<span>Verified</span>'}</td>
+    </tr>`;
+  });
+  
+  html += '</tbody></table>';
+  orderTable.innerHTML = html;
+}
+
+function verifyOrder(index) {
+  if (orders[index]) {
+    orders[index].verified = true;
+    saveOrders();
+    renderOrders();
+    alert('✅ Order verified!');
+  }
+}
+
+// ============ SLIDESHOW FUNCTIONS ============
+function handleSlideshowSave(event) {
+  event.preventDefault();
+  
+  const imageFile = document.getElementById('slideshowImage').files[0];
+  
+  if (!imageFile) {
+    alert('Please select an image!');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    slideshow.push(e.target.result);
     saveSlideshow();
-    renderSlideshowTable();
+    slideshowForm.reset();
+    renderSlideshow();
+    alert('✅ Slideshow image added!');
+  };
+  reader.readAsDataURL(imageFile);
+}
+
+function deleteSlideImage(index) {
+  if (confirm('Delete this slideshow image?')) {
+    slideshow.splice(index, 1);
+    saveSlideshow();
+    renderSlideshow();
   }
 }
 
-function exportOrdersToCSV() {
-  if (!orders.length) {
-    alert('No orders available to export.');
+function renderSlideshow() {
+  if (!slideshowTable) return;
+  
+  if (slideshow.length === 0) {
+    slideshowTable.innerHTML = '<p class="hint">No slideshow images yet.</p>';
     return;
   }
 
-  const csvRows = [
-    ['Order ID', 'Customer Name', 'Phone', 'Address', 'Total', 'Status', 'Submitted At', 'Items'],
-  ];
-
-  orders.forEach((order) => {
-    const itemList = order.items
-      .map((item) => `${item.name} x${item.quantity}`)
-      .join(' | ');
-    csvRows.push([
-      order.id,
-      order.customerName,
-      order.phone,
-      order.address,
-      order.total,
-      order.status,
-      order.createdAt,
-      itemList,
-    ]);
+  let html = '<table class="admin-table"><thead><tr><th>Preview</th><th>Action</th></tr></thead><tbody>';
+  
+  slideshow.forEach((img, idx) => {
+    html += `<tr>
+      <td><img src="${img}" alt="Slide" style="width: 80px; height: 50px; object-fit: cover; border-radius: 8px;"></td>
+      <td><button class="button button-secondary" onclick="deleteSlideImage(${idx})">Delete</button></td>
+    </tr>`;
   });
-
-  const csvContent = csvRows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'klyrastudio-orders.csv';
-  link.click();
-  URL.revokeObjectURL(url);
+  
+  html += '</tbody></table>';
+  slideshowTable.innerHTML = html;
 }
 
-async function copyOrdersToClipboard() {
-  if (!orders.length) {
-    alert('No orders available to copy.');
-    return;
-  }
+// ============ TAB SWITCHING ============
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.hidden = true;
+  });
+  document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.classList.remove('active');
+  });
 
-  const text = orders
-    .map(
-      (order) =>
-        `Order ${order.id}: ${order.customerName} | ${order.phone} | ₹${order.total} | ${order.status} | Items: ${order.items
-          .map((item) => `${item.name} x${item.quantity}`)
-          .join(', ')}`,
-    )
-    .join('\n\n');
-
-  try {
-    await navigator.clipboard.writeText(text);
-    alert('Order data copied to clipboard. Paste into Google Sheets or your preferred order system.');
-  } catch (error) {
-    alert('Copy failed. Please use export instead.');
-  }
+  document.getElementById(tabName).hidden = false;
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
 }
 
-function initAdminEvents() {
-  loginForm.addEventListener('submit', handleLogin);
-  logoutButton.addEventListener('click', handleLogout);
-  productForm.addEventListener('submit', handleProductSave);
-  slideshowForm.addEventListener('submit', handleSlideshowSave);
-  exportOrders.addEventListener('click', exportOrdersToCSV);
-  copyOrders.addEventListener('click', copyOrdersToClipboard);
-  productTable.addEventListener('click', (event) => {
-    const editButton = event.target.closest('button[data-edit-product]');
-    if (editButton) {
-      handleEditProduct(Number(editButton.dataset.editProduct));
-    }
-    const deleteButton = event.target.closest('button[data-delete-product]');
-    if (deleteButton) {
-      handleDeleteProduct(Number(deleteButton.dataset.deleteProduct));
-    }
-  });
-  slideshowTable.addEventListener('click', (event) => {
-    const deleteButton = event.target.closest('button[data-delete-slide]');
-    if (deleteButton) {
-      handleDeleteSlide(Number(deleteButton.dataset.deleteSlide));
-    }
-  });
-  orderTable.addEventListener('click', (event) => {
-    const button = event.target.closest('button[data-verify]');
-    if (!button) return;
-    handleVerifyOrder(Number(button.dataset.verify));
-  });
-  tabButtons.forEach((button) => {
-    button.addEventListener('click', () => setTab(button.dataset.tab));
-  });
-}
-
-function initAdmin() {
+// ============ EVENT LISTENERS ============
+function initializeAdmin() {
+  // Load data
   loadProducts();
   loadOrders();
   loadSlideshow();
+
+  // Login event
+  loginForm.addEventListener('submit', handleLogin);
   
-  // Ensure dashboard is hidden and login is visible on page load
-  loginSection.removeAttribute('hidden');
-  dashboardSection.setAttribute('hidden', '');
-  logoutButton.setAttribute('hidden', '');
-  
-  initAdminEvents();
+  // Logout events
+  logoutButton.addEventListener('click', handleLogout);
+  if (logoutButtonDash) {
+    logoutButtonDash.addEventListener('click', handleLogout);
+  }
+
+  // Product form
+  productForm.addEventListener('submit', handleProductSave);
+
+  // Slideshow form
+  slideshowForm.addEventListener('submit', handleSlideshowSave);
+
+  // Tab buttons
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.getAttribute('data-tab'));
+    });
+  });
 }
 
-initAdmin();
+// Start the admin portal
+document.addEventListener('DOMContentLoaded', initializeAdmin);
