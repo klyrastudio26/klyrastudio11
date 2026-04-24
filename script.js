@@ -1,11 +1,9 @@
-const BUSINESS_NAME = 'KlyraStudio';
-const INSTAGRAM_URL = 'https://www.instagram.com/klyrastudio';
-const WHATSAPP_NUMBER = '+91 063811 63108';
-const PAYMENT_UPI = 'keerthi8015-2@okaxis';
-const STORAGE_PRODUCTS_KEY = 'ks_products';
-const STORAGE_ORDERS_KEY = 'ks_orders';
-const STORAGE_SLIDESHOW_KEY = 'ks_slideshow';
+// ============ CONSTANTS ============
+const PRODUCTS_STORAGE_KEY = 'ks_products';
+const ORDERS_STORAGE_KEY = 'ks_orders';
+const SLIDESHOW_STORAGE_KEY = 'ks_slideshow';
 
+// Default products with new structure
 const defaultProducts = [
   {
     id: 'p001',
@@ -45,61 +43,92 @@ const defaultSlideshow = [
   'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=1200&q=80',
-  'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=1200&q=80',
 ];
 
+// ============ STATE ============
 let products = [];
+let orders = [];
+let slideshow = [];
 let cart = [];
-let slideshowImages = [];
 let currentSlide = 0;
 
+// ============ DOM ELEMENTS ============
 const productGrid = document.getElementById('productGrid');
+const slideshowContainer = document.getElementById('slideshowContainer');
 const cartItems = document.getElementById('cartItems');
 const cartTotal = document.getElementById('cartTotal');
 const orderForm = document.getElementById('orderForm');
 const orderMessage = document.getElementById('orderMessage');
 
+// ============ STORAGE FUNCTIONS ============
 function loadProducts() {
-  const saved = localStorage.getItem(STORAGE_PRODUCTS_KEY);
-  products = saved ? JSON.parse(saved) : [...defaultProducts];
+  try {
+    const saved = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    products = saved ? JSON.parse(saved) : [...defaultProducts];
+    console.log('✅ Products loaded:', products.length);
+  } catch (e) {
+    console.error('Failed to load products:', e);
+    products = [...defaultProducts];
+  }
 }
 
 function saveProducts() {
-  localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(products));
-}
-
-function loadSlideshow() {
-  const saved = localStorage.getItem(STORAGE_SLIDESHOW_KEY);
   try {
-    slideshowImages = saved ? JSON.parse(saved) : defaultSlideshow.slice();
-  } catch {
-    slideshowImages = defaultSlideshow.slice();
+    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+    console.log('✅ Products saved');
+  } catch (e) {
+    console.error('Failed to save products:', e);
   }
-}
-
-function saveSlideshow() {
-  localStorage.setItem(STORAGE_SLIDESHOW_KEY, JSON.stringify(slideshowImages));
 }
 
 function loadOrders() {
-  const saved = localStorage.getItem(STORAGE_ORDERS_KEY);
   try {
-    return saved ? JSON.parse(saved) : [];
-  } catch {
-    return [];
+    const saved = localStorage.getItem(ORDERS_STORAGE_KEY);
+    orders = saved ? JSON.parse(saved) : [];
+    console.log('✅ Orders loaded:', orders.length);
+  } catch (e) {
+    console.error('Failed to load orders:', e);
+    orders = [];
   }
 }
 
-function saveOrder(order) {
-  const orders = loadOrders();
-  orders.unshift(order);
-  localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders));
+function saveOrders() {
+  try {
+    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
+    console.log('✅ Orders saved');
+  } catch (e) {
+    console.error('Failed to save orders:', e);
+  }
 }
 
+function loadSlideshow() {
+  try {
+    const saved = localStorage.getItem(SLIDESHOW_STORAGE_KEY);
+    slideshow = saved ? JSON.parse(saved) : [...defaultSlideshow];
+    console.log('✅ Slideshow loaded:', slideshow.length);
+  } catch (e) {
+    console.error('Failed to load slideshow:', e);
+    slideshow = [...defaultSlideshow];
+  }
+}
+
+// ============ RENDER FUNCTIONS ============
 function renderProducts() {
+  if (!productGrid) return;
   productGrid.innerHTML = '';
+  
+  if (!products || products.length === 0) {
+    productGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--muted);">No products available</p>';
+    return;
+  }
+
   products.forEach(product => {
-    const discountPercent = Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100);
+    if (!product.originalPrice || !product.discountPrice) return;
+    
+    const discountPercent = Math.round(
+      ((product.originalPrice - product.discountPrice) / product.originalPrice) * 100
+    );
+    
     const card = document.createElement('div');
     card.className = 'product-card';
     card.innerHTML = `
@@ -118,56 +147,73 @@ function renderProducts() {
 }
 
 function renderSlideshow() {
-  const container = document.getElementById('slideshowContainer');
-  container.innerHTML = '';
-  slideshowImages.forEach((image, index) => {
+  if (!slideshowContainer) return;
+  slideshowContainer.innerHTML = '';
+  
+  if (!slideshow || slideshow.length === 0) {
+    slideshowContainer.innerHTML = '<div class="slide" style="background: var(--surface);"></div>';
+    return;
+  }
+
+  slideshow.forEach((image, index) => {
     const slide = document.createElement('div');
-    slide.className = 'slide';
+    slide.className = `slide ${index === currentSlide ? 'active' : ''}`;
     slide.style.backgroundImage = `url('${image}')`;
-    if (index === currentSlide) slide.classList.add('active');
-    container.appendChild(slide);
+    slideshowContainer.appendChild(slide);
   });
 }
 
-function changeSlide(direction) {
-  currentSlide = (currentSlide + direction + slideshowImages.length) % slideshowImages.length;
-  renderSlideshow();
-}
-
 function renderCart() {
-  if (!cart.length) {
+  if (!cartItems) return;
+  
+  if (!cart || cart.length === 0) {
     cartItems.innerHTML = '<p>No items added yet.</p>';
     cartTotal.textContent = '₹0';
     return;
   }
 
   cartItems.innerHTML = '';
+  let total = 0;
+
   cart.forEach((item, index) => {
+    const itemTotal = item.discountPrice * item.quantity;
+    total += itemTotal;
+
     const line = document.createElement('div');
     line.className = 'cart-item';
     line.innerHTML = `
       <span>${item.name} × ${item.quantity}</span>
       <span>
-        ₹${((item.discountPrice || item.price) * item.quantity).toLocaleString()} 
+        ₹${itemTotal.toLocaleString()} 
         <button data-remove="${index}">Remove</button>
       </span>
     `;
     cartItems.appendChild(line);
   });
 
-  const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price) * item.quantity, 0);
   cartTotal.textContent = `₹${total.toLocaleString()}`;
 }
 
+// ============ CART FUNCTIONS ============
 function addProductToCart(productId) {
-  const product = products.find((item) => item.id === productId);
-  if (!product) return;
-  const existing = cart.find((item) => item.id === productId);
+  const product = products.find(p => p.id === productId);
+  if (!product) {
+    alert('Product not found');
+    return;
+  }
+
+  const existing = cart.find(item => item.id === productId);
   if (existing) {
     existing.quantity += 1;
   } else {
-    cart.push({ ...product, quantity: 1, price: product.discountPrice });
+    cart.push({
+      id: product.id,
+      name: product.name,
+      discountPrice: product.discountPrice,
+      quantity: 1,
+    });
   }
+  
   renderCart();
 }
 
@@ -176,79 +222,104 @@ function removeCartItem(index) {
   renderCart();
 }
 
-function setOrderMessage(message, success = true) {
+// ============ SLIDESHOW FUNCTIONS ============
+function changeSlide(direction) {
+  if (!slideshow || slideshow.length === 0) return;
+  currentSlide = (currentSlide + direction + slideshow.length) % slideshow.length;
+  renderSlideshow();
+}
+
+// ============ CHECKOUT FUNCTION ============
+function handleCheckout(event) {
+  event.preventDefault();
+
+  if (!cart || cart.length === 0) {
+    showOrderMessage('Please add items to cart!', false);
+    return;
+  }
+
+  const name = document.getElementById('customerName')?.value.trim();
+  const phone = document.getElementById('customerPhone')?.value.trim();
+  const address = document.getElementById('customerAddress')?.value.trim();
+
+  if (!name || !phone || !address) {
+    showOrderMessage('Please fill all fields!', false);
+    return;
+  }
+
+  const total = cart.reduce((sum, item) => sum + item.discountPrice * item.quantity, 0);
+
+  const order = {
+    id: `KS-${Date.now().toString().slice(-6)}`,
+    name,
+    phone,
+    address,
+    items: [...cart],
+    total,
+    verified: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  orders.push(order);
+  saveOrders();
+
+  cart = [];
+  renderCart();
+  orderForm.reset();
+
+  showOrderMessage(
+    `✅ Order placed! ID: <strong>${order.id}</strong><br>Pay ₹${total.toLocaleString()} to <strong>keerthi8015-2@okaxis</strong><br>Send screenshot to <strong>+91 063811 63108</strong>`,
+    true
+  );
+}
+
+function showOrderMessage(message, success = true) {
+  if (!orderMessage) return;
   orderMessage.innerHTML = `<p>${message}</p>`;
   orderMessage.style.borderColor = success ? '#a9d6a9' : '#d68a8a';
   orderMessage.style.color = success ? '#c6f5d3' : '#ffd6d6';
 }
 
-function generateOrderId() {
-  return `KS-${Date.now().toString().slice(-6)}`;
-}
-
-function handleCheckout(event) {
-  event.preventDefault();
-  if (!cart.length) {
-    setOrderMessage('Please add at least one product to your cart before submitting.', false);
-    return;
+// ============ EVENT LISTENERS ============
+function setupEventListeners() {
+  if (productGrid) {
+    productGrid.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-product-id]');
+      if (btn) addProductToCart(btn.dataset.productId);
+    });
   }
 
-  const name = document.getElementById('customerName').value.trim();
-  const phone = document.getElementById('customerPhone').value.trim();
-  const address = document.getElementById('customerAddress').value.trim();
-
-  if (!name || !phone || !address) {
-    setOrderMessage('Please complete all order fields before submitting.', false);
-    return;
+  if (cartItems) {
+    cartItems.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-remove]');
+      if (btn) removeCartItem(Number(btn.dataset.remove));
+    });
   }
 
-  const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price) * item.quantity, 0);
-  const order = {
-    id: generateOrderId(),
-    name,
-    phone,
-    address,
-    items: cart,
-    total,
-    verified: false,
-    status: 'Awaiting Payment Verification',
-    paymentMethod: PAYMENT_UPI,
-    whatsapp: WHATSAPP_NUMBER,
-    createdAt: new Date().toISOString(),
-  };
+  if (orderForm) {
+    orderForm.addEventListener('submit', handleCheckout);
+  }
 
-  saveOrder(order);
-  cart = [];
-  renderCart();
-  orderForm.reset();
-
-  setOrderMessage(`Order submitted successfully! Your order ID is <strong>${order.id}</strong>. Please pay ₹${order.total.toLocaleString()} to ${PAYMENT_UPI} and send the screenshot to WhatsApp ${WHATSAPP_NUMBER}. The admin will verify payment and confirm your order.`);
+  // Slideshow auto-advance
+  setInterval(() => changeSlide(1), 5000);
 }
 
-function initEventListeners() {
-  productGrid.addEventListener('click', (event) => {
-    const button = event.target.closest('button[data-product-id]');
-    if (!button) return;
-    addProductToCart(button.dataset.productId);
-  });
-
-  cartItems.addEventListener('click', (event) => {
-    const removeButton = event.target.closest('button[data-remove]');
-    if (!removeButton) return;
-    removeCartItem(Number(removeButton.dataset.remove));
-  });
-
-  orderForm.addEventListener('submit', handleCheckout);
-}
-
+// ============ INITIALIZATION ============
 function init() {
+  console.log('🚀 Initializing storefront...');
   loadProducts();
+  loadOrders();
   loadSlideshow();
   renderProducts();
   renderSlideshow();
   renderCart();
-  initEventListeners();
-  setInterval(() => changeSlide(1), 5000); // Auto slide every 5 seconds
+  setupEventListeners();
+  console.log('✅ Storefront ready!');
 }
 
-init();
+// Start when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
