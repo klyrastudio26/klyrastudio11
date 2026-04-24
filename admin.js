@@ -189,25 +189,35 @@ function renderProducts() {
   productTable.innerHTML = html;
 }
 
-// ============ ORDER FUNCTIONS ============
+// ============ ORDERS TAB - IMPROVED ============
+function refreshOrders() {
+  loadOrders(); // Reload from storage each time
+  renderOrders();
+}
+
 function renderOrders() {
   if (!orderTable) return;
 
   if (!orders || orders.length === 0) {
-    orderTable.innerHTML = '<p class="hint">No orders yet</p>';
+    orderTable.innerHTML = '<p class="hint">No orders yet. Waiting for customers...</p>';
     return;
   }
 
-  let html = '<table class="admin-table"><thead><tr><th>Customer</th><th>Phone</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+  let html = '<table class="admin-table"><thead><tr><th>Customer</th><th>Phone</th><th>Address</th><th>Total</th><th>Items</th><th>Status</th><th>Action</th></tr></thead><tbody>';
 
   orders.forEach((order, idx) => {
-    const status = order.verified ? '✅ Verified' : '⏳ Pending';
+    const itemCount = order.items?.length || 0;
+    const status = order.verified ? '✅ VERIFIED' : '⏳ PENDING';
+    const statusColor = order.verified ? 'green' : 'orange';
+    
     html += `<tr>
-      <td>${order.name}</td>
+      <td><strong>${order.name}</strong></td>
       <td>${order.phone}</td>
-      <td>₹${order.total?.toLocaleString() || '0'}</td>
-      <td>${status}</td>
-      <td>${!order.verified ? `<button class="button button-secondary" onclick="verifyOrder(${idx})">Verify</button>` : 'Done'}</td>
+      <td>${order.address.substring(0, 30)}...</td>
+      <td><strong>₹${order.total?.toLocaleString() || '0'}</strong></td>
+      <td>${itemCount} items</td>
+      <td style="color: ${statusColor}; font-weight: bold;">${status}</td>
+      <td>${!order.verified ? `<button class="button button-secondary" onclick="verifyOrder(${idx})">✓ Verify</button>` : '<span style="color: green;">✓ Done</span>'}</td>
     </tr>`;
   });
 
@@ -258,16 +268,18 @@ function renderSlideshow() {
   if (!slideshowTable) return;
 
   if (!slideshow || slideshow.length === 0) {
-    slideshowTable.innerHTML = '<p class="hint">No slideshow images</p>';
+    slideshowTable.innerHTML = '<p class="hint">No slideshow images yet. Upload to display on homepage!</p>';
     return;
   }
 
-  let html = '<table class="admin-table"><thead><tr><th>Preview</th><th>Action</th></tr></thead><tbody>';
+  let html = '<table class="admin-table"><thead><tr><th>Image Preview</th><th>Size</th><th>Action</th></tr></thead><tbody>';
 
   slideshow.forEach((img, idx) => {
+    const sizeKB = Math.round((img.length * 3/4) / 1024);
     html += `<tr>
-      <td><img src="${img}" alt="Slide" style="width: 80px; height: 50px; object-fit: cover; border-radius: 8px;"></td>
-      <td><button class="button button-secondary" onclick="deleteSlideshow(${idx})">Delete</button></td>
+      <td><img src="${img}" alt="Slide ${idx + 1}" style="width: 100px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid var(--accent);"></td>
+      <td>${sizeKB} KB</td>
+      <td><button class="button button-secondary" onclick="deleteSlideshow(${idx})">🗑️ Delete</button></td>
     </tr>`;
   });
 
@@ -284,13 +296,30 @@ function switchTab(tabName) {
   const btn = document.querySelector(`[data-tab="${tabName}"]`);
   if (tab) tab.hidden = false;
   if (btn) btn.classList.add('active');
+  
+  // Refresh data when switching to that tab
+  if (tabName === 'ordersTab') {
+    refreshOrders();
+  } else if (tabName === 'slideshowTab') {
+    renderSlideshow();
+  } else if (tabName === 'productsTab') {
+    renderProducts();
+  }
 }
 
 // ============ INITIALIZATION ============
 function initAdmin() {
+  console.log('🚀 Admin Portal Loading...');
+  
   loadProducts();
   loadOrders();
   loadSlideshow();
+
+  console.log('📊 Loaded:', {
+    products: products.length,
+    orders: orders.length,
+    slideshow: slideshow.length
+  });
 
   if (loginForm) loginForm.addEventListener('submit', handleLogin);
   if (logoutButton) logoutButton.addEventListener('click', handleLogout);
@@ -301,6 +330,8 @@ function initAdmin() {
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
   });
+
+  console.log('✅ Admin Portal Ready!');
 }
 
 // Start when ready

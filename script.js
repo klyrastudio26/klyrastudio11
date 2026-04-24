@@ -306,15 +306,27 @@ function setupEventListeners() {
 
 // ============ INITIALIZATION ============
 function init() {
-  console.log('🚀 Initializing storefront...');
+  console.log('🚀 KlyraStudio Storefront Loading...');
+  
   loadProducts();
   loadOrders();
   loadSlideshow();
+
+  console.log('📊 Loaded:', {
+    products: products.length,
+    orders: orders.length,
+    slideshow: slideshow.length
+  });
+
   renderProducts();
   renderSlideshow();
   renderCart();
   setupEventListeners();
-  console.log('✅ Storefront ready!');
+  
+  // Slideshow auto-advance every 5 seconds
+  setInterval(() => changeSlide(1), 5000);
+  
+  console.log('✅ Storefront Ready!');
 }
 
 // Start when DOM is ready
