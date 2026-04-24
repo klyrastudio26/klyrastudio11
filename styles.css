@@ -486,8 +486,13 @@ button:hover {
 }
 
 .admin-login-card {
+  display: block;
   max-width: 520px;
   margin: 0 auto;
+}
+
+.admin-login-card[hidden] {
+  display: none !important;
 }
 
 .admin-form label {
@@ -507,8 +512,12 @@ button:hover {
 }
 
 .admin-dashboard {
-  display: grid;
+  display: none;
   gap: 24px;
+}
+
+.admin-dashboard:not([hidden]) {
+  display: grid;
 }
 
 .admin-tabs {

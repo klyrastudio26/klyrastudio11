@@ -222,19 +222,14 @@ function handleLogin(event) {
   const password = document.getElementById('adminPassword').value.trim();
 
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    // Hide login section - ADD hidden attribute
+    // Hide login section
     loginSection.setAttribute('hidden', '');
-    loginSection.style.display = 'none';
-    loginSection.classList.add('hidden');
     
-    // Show dashboard section - REMOVE hidden attribute
+    // Show dashboard section
     dashboardSection.removeAttribute('hidden');
-    dashboardSection.style.display = 'block';
-    dashboardSection.classList.remove('hidden');
     
     // Show logout button
     logoutButton.removeAttribute('hidden');
-    logoutButton.style.display = 'block';
     
     // Clear and render all tables
     renderProductTable();
@@ -255,17 +250,12 @@ function handleLogin(event) {
 function handleLogout() {
   // Show login section
   loginSection.removeAttribute('hidden');
-  loginSection.style.display = 'block';
-  loginSection.classList.remove('hidden');
   
   // Hide dashboard section
   dashboardSection.setAttribute('hidden', '');
-  dashboardSection.style.display = 'none';
-  dashboardSection.classList.add('hidden');
   
   // Hide logout button
   logoutButton.setAttribute('hidden', '');
-  logoutButton.style.display = 'none';
   
   // Reset form
   loginForm.reset();
@@ -469,15 +459,8 @@ function initAdmin() {
   
   // Ensure dashboard is hidden and login is visible on page load
   loginSection.removeAttribute('hidden');
-  loginSection.style.display = 'block';
-  loginSection.classList.remove('hidden');
-  
   dashboardSection.setAttribute('hidden', '');
-  dashboardSection.style.display = 'none';
-  dashboardSection.classList.add('hidden');
-  
   logoutButton.setAttribute('hidden', '');
-  logoutButton.style.display = 'none';
   
   initAdminEvents();
 }
