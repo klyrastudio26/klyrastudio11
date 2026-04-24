@@ -260,8 +260,14 @@ function handleCheckout(event) {
     createdAt: new Date().toISOString(),
   };
 
+  console.log('📦 New order created:', order);
+  
   orders.push(order);
+  console.log('📦 Orders array now has:', orders.length, 'orders');
+  
   saveOrders();
+  console.log('💾 Orders saved to localStorage with key:', ORDERS_STORAGE_KEY);
+  console.log('💾 localStorage now contains:', JSON.parse(localStorage.getItem(ORDERS_STORAGE_KEY)));
 
   cart = [];
   renderCart();

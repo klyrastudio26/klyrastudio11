@@ -191,15 +191,24 @@ function renderProducts() {
 
 // ============ ORDERS TAB - IMPROVED ============
 function refreshOrders() {
+  console.log('🔄 Refreshing Orders...');
   loadOrders(); // Reload from storage each time
+  console.log('📋 Orders loaded:', orders.length, orders);
   renderOrders();
 }
 
 function renderOrders() {
-  if (!orderTable) return;
+  console.log('🎨 Rendering Orders...');
+  if (!orderTable) {
+    console.error('❌ orderTable element not found!');
+    return;
+  }
+
+  console.log('📊 Orders to render:', orders.length);
 
   if (!orders || orders.length === 0) {
     orderTable.innerHTML = '<p class="hint">No orders yet. Waiting for customers...</p>';
+    console.log('✅ Rendered empty orders message');
     return;
   }
 
@@ -223,6 +232,7 @@ function renderOrders() {
 
   html += '</tbody></table>';
   orderTable.innerHTML = html;
+  console.log('✅ Orders rendered successfully');
 }
 
 function verifyOrder(idx) {
@@ -289,20 +299,31 @@ function renderSlideshow() {
 
 // ============ TAB SWITCHING ============
 function switchTab(tabName) {
+  console.log(`📑 Switching to tab: ${tabName}`);
+  
   document.querySelectorAll('.tab-panel').forEach(p => p.hidden = true);
   document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
 
   const tab = document.getElementById(tabName);
   const btn = document.querySelector(`[data-tab="${tabName}"]`);
-  if (tab) tab.hidden = false;
+  
+  console.log(`🔍 Found tab element: ${!!tab}, Found button: ${!!btn}`);
+  
+  if (tab) {
+    tab.hidden = false;
+    console.log(`✅ Tab "${tabName}" is now visible`);
+  }
   if (btn) btn.classList.add('active');
   
   // Refresh data when switching to that tab
   if (tabName === 'ordersTab') {
+    console.log('📦 Calling refreshOrders...');
     refreshOrders();
   } else if (tabName === 'slideshowTab') {
+    console.log('🎬 Calling renderSlideshow...');
     renderSlideshow();
   } else if (tabName === 'productsTab') {
+    console.log('📦 Calling renderProducts...');
     renderProducts();
   }
 }
@@ -311,9 +332,19 @@ function switchTab(tabName) {
 function initAdmin() {
   console.log('🚀 Admin Portal Loading...');
   
+  console.log('DOM Elements:');
+  console.log('  orderTable:', orderTable);
+  console.log('  productTable:', productTable);
+  console.log('  slideshowTable:', slideshowTable);
+  
   loadProducts();
+  console.log('✅ Products loaded:', products.length);
+  
   loadOrders();
+  console.log('✅ Orders loaded:', orders.length);
+  
   loadSlideshow();
+  console.log('✅ Slideshow loaded:', slideshow.length);
 
   console.log('📊 Loaded:', {
     products: products.length,
@@ -327,8 +358,11 @@ function initAdmin() {
   if (productForm) productForm.addEventListener('submit', handleProductSave);
   if (slideshowForm) slideshowForm.addEventListener('submit', handleSlideshowSave);
 
-  tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+  console.log('📌 Tab buttons found:', tabButtons.length);
+  tabButtons.forEach((btn, idx) => {
+    const tabName = btn.getAttribute('data-tab');
+    console.log(`  Button ${idx}: "${tabName}"`);
+    btn.addEventListener('click', () => switchTab(tabName));
   });
 
   console.log('✅ Admin Portal Ready!');
