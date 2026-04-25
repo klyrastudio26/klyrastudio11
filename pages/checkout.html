@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Klyra Studio</title>
+    <link rel="stylesheet" href="../css/checkout.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <div class="logo">
+                <h1>KLYRA STUDIO</h1>
+            </div>
+            <div class="steps">
+                <div class="step active" id="step-1">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Review</span>
+                </div>
+                <div class="step" id="step-2">
+                    <span class="step-number">2</span>
+                    <span class="step-label">Shipping</span>
+                </div>
+                <div class="step" id="step-3">
+                    <span class="step-number">3</span>
+                    <span class="step-label">Payment</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="checkout-content">
+            <!-- Step 1: Review Order -->
+            <div class="checkout-step active" id="review-step">
+                <h2>Order Review</h2>
+                <div class="order-review">
+                    <div id="order-items"></div>
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="review-subtotal">₹0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax (18%):</span>
+                            <span id="review-tax">₹0</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total:</span>
+                            <span id="review-total">₹0</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-next" onclick="goToStep(2)">Continue to Shipping</button>
+            </div>
+
+            <!-- Step 2: Shipping Details -->
+            <div class="checkout-step" id="shipping-step">
+                <h2>Shipping Information</h2>
+                <form id="shipping-form">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="full-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phone-number" placeholder="Enter your mobile number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="address" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="city" required>
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input type="text" id="state" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Postal Code</label>
+                            <input type="text" id="postal-code" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <input type="text" id="country" value="India" required>
+                        </div>
+                    </div>
+                </form>
+                <div class="button-group">
+                    <button class="btn-back" onclick="goToStep(1)">Back</button>
+                    <button class="btn-next" onclick="goToStep(3)">Continue to Payment</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Payment -->
+            <div class="checkout-step" id="payment-step">
+                <h2>Payment Information</h2>
+                
+                <div class="payment-info">
+                    <div class="payment-method">
+                        <h3><i class="fas fa-mobile-alt"></i> UPI Payment</h3>
+                        <p>Send payment to:</p>
+                        <div class="upi-details">
+                            <strong class="upi-id">keerthi8015-2@okaxis</strong>
+                            <button class="btn-copy" onclick="copyToClipboard('keerthi8015-2@okaxis')">
+                                <i class="fas fa-copy"></i> Copy UPI ID
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="payment-amount">
+                        <h3>Amount to Pay</h3>
+                        <p class="amount" id="payment-amount">₹0</p>
+                    </div>
+
+                    <div class="payment-steps">
+                        <h4>Payment Steps:</h4>
+                        <ol>
+                            <li>Copy the UPI ID above</li>
+                            <li>Open your payment app (Google Pay, PhonePe, BHIM, etc.)</li>
+                            <li>Paste the UPI ID and enter the amount</li>
+                            <li>Complete the payment</li>
+                            <li>Take a screenshot of the successful payment</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="payment-screenshot">
+                    <h3>Upload Payment Screenshot</h3>
+                    <p>After completing payment, upload the screenshot</p>
+                    <input type="file" id="payment-screenshot" accept="image/*" required>
+                    <small>This helps us verify your payment quickly</small>
+                </div>
+
+                <div class="whatsapp-info">
+                    <i class="fas fa-info-circle"></i>
+                    <p>After uploading the screenshot, we'll send you a WhatsApp confirmation to: <strong id="whatsapp-number"></strong></p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-back" onclick="goToStep(2)">Back</button>
+                    <button class="btn-submit" onclick="submitOrder()">Complete Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Order Placed Successfully!</h2>
+            <p id="success-message"></p>
+            <div class="order-confirmation">
+                <p><strong>Order ID:</strong> <span id="order-id"></span></p>
+                <p><strong>Amount:</strong> <span id="order-amount"></span></p>
+                <p><strong>Status:</strong> Awaiting Payment Verification</p>
+            </div>
+            <p class="info-text">We've sent you a WhatsApp message with your order details.</p>
+            <button class="btn-primary" onclick="goHome()">Back to Home</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/checkout.js"></script>
+</body>
+</html>

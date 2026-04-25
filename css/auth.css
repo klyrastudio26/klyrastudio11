@@ -1,0 +1,256 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+}
+
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.auth-card {
+    background: #ffffff;
+    padding: 50px;
+    border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(212, 175, 55, 0.15);
+    max-width: 400px;
+    width: 100%;
+    animation: slideInUp 0.5s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-logo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.auth-logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: #d4af37;
+    letter-spacing: 2px;
+    font-weight: 900;
+    margin-bottom: 5px;
+}
+
+.auth-logo p {
+    font-size: 14px;
+    color: #999;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+form {
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #d4af37;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.form-group small {
+    display: block;
+    font-size: 11px;
+    color: #999;
+    margin-top: 5px;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #d4af37 0%, #e8c547 100%);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(212, 175, 55, 0.3);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+.auth-footer {
+    text-align: center;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 20px;
+}
+
+.auth-footer p {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.auth-footer a {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.auth-footer a:hover {
+    color: #e8c547;
+    text-decoration: underline;
+}
+
+.security-notice {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f0f0f0;
+    border-left: 4px solid #d4af37;
+    border-radius: 3px;
+    text-align: center;
+}
+
+.security-notice i {
+    color: #d4af37;
+    font-size: 20px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.security-notice p {
+    font-size: 11px;
+    color: #666;
+}
+
+/* Error Message */
+.error-message {
+    background: #ffebee;
+    color: #c62828;
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+    animation: slideInDown 0.3s ease;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Success Message */
+.success-message {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    display: none;
+}
+
+.success-message.show {
+    display: block;
+    animation: slideInDown 0.3s ease;
+}
+
+/* Loading State */
+.btn-login.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.btn-login.loading::after {
+    content: ' ...';
+    animation: dots 1s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ' '; }
+    40% { content: ' .'; }
+    60% { content: ' ..'; }
+    80%, 100% { content: ' ...'; }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 30px 20px;
+    }
+
+    .auth-logo h1 {
+        font-size: 24px;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+}

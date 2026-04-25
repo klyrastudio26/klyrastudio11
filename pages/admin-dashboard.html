@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Klyra Studio</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>KLYRA ADMIN</h2>
+            <button class="toggle-sidebar" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" onclick="switchTab('dashboard')">
+                <i class="fas fa-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchTab('products')">
+                <i class="fas fa-gem"></i>
+                <span>Products</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchTab('collections')">
+                <i class="fas fa-th-large"></i>
+                <span>Collections</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchTab('orders')">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Orders</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchTab('payment-verification')">
+                <i class="fas fa-credit-card"></i>
+                <span>Payment Verification</span>
+            </a>
+            <a href="#" class="nav-item" onclick="switchTab('users')">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            <a href="#" class="nav-item" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <h1 id="page-title">Dashboard</h1>
+            </div>
+            <div class="header-actions">
+                <div class="admin-info">
+                    <span id="admin-name">Admin</span>
+                    <img src="https://via.placeholder.com/40/d4af37/1a1a1a?text=A" alt="Admin">
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Total Orders</h3>
+                        <p id="total-orders">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Revenue</h3>
+                        <p id="total-revenue">₹0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Products</h3>
+                        <p id="total-products">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Users</h3>
+                        <p id="total-users">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-orders">
+                <h3>Recent Orders</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-orders-list">
+                        <tr><td colspan="5" class="loading">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="products" class="tab-content">
+            <div class="tab-header">
+                <h2>Manage Products</h2>
+                <button class="btn-primary" onclick="showAddProductModal()">
+                    <i class="fas fa-plus"></i> Add Product
+                </button>
+            </div>
+
+            <div class="products-list">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Collection</th>
+                            <th>Price</th>
+                            <th>Image</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-table-body">
+                        <tr><td colspan="5" class="loading">Loading products...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Collections Tab -->
+        <div id="collections" class="tab-content">
+            <div class="tab-header">
+                <h2>Manage Collections</h2>
+                <button class="btn-primary" onclick="showAddCollectionModal()">
+                    <i class="fas fa-plus"></i> Add Collection
+                </button>
+            </div>
+
+            <div class="collections-list">
+                <div class="collections-grid" id="collections-grid">
+                    <div class="loading">Loading collections...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders" class="tab-content">
+            <div class="tab-header">
+                <h2>Manage Orders</h2>
+                <button class="btn-primary" onclick="exportOrdersToSheets()">
+                    <i class="fas fa-download"></i> Export to Google Sheets
+                </button>
+            </div>
+
+            <div class="orders-list">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer Name</th>
+                            <th>Phone</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body">
+                        <tr><td colspan="7" class="loading">Loading orders...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payment Verification Tab -->
+        <div id="payment-verification" class="tab-content">
+            <div class="tab-header">
+                <h2>Payment Verification</h2>
+            </div>
+
+            <div class="payment-verification">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Payment Screenshot</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payment-table-body">
+                        <tr><td colspan="6" class="loading">Loading pending payments...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="users" class="tab-content">
+            <div class="tab-header">
+                <h2>Manage Users</h2>
+            </div>
+
+            <div class="users-list">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Phone</th>
+                            <th>Registered Date</th>
+                            <th>Orders</th>
+                            <th>Total Spent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <tr><td colspan="6" class="loading">Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeProductModal()">&times;</span>
+            <h2>Add Product</h2>
+            <form id="product-form">
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="product-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Collection</label>
+                    <select id="product-collection" required>
+                        <option value="">Select Collection</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Price (₹)</label>
+                    <input type="number" id="product-price" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="product-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Product Image</label>
+                    <input type="file" id="product-image" accept="image/*">
+                    <small>or paste image URL:</small>
+                    <input type="text" id="product-image-url" placeholder="https://...">
+                </div>
+                <button type="submit" class="btn-primary">Add Product</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Collection Modal -->
+    <div id="collection-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCollectionModal()">&times;</span>
+            <h2>Add Collection</h2>
+            <form id="collection-form">
+                <div class="form-group">
+                    <label>Collection Name</label>
+                    <input type="text" id="collection-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="collection-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Collection Image</label>
+                    <input type="file" id="collection-image" accept="image/*">
+                    <small>or paste image URL:</small>
+                    <input type="text" id="collection-image-url" placeholder="https://...">
+                </div>
+                <button type="submit" class="btn-primary">Add Collection</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Verification Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePaymentModal()">&times;</span>
+            <h2>Verify Payment</h2>
+            <div id="payment-modal-content"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-storage.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/admin-dashboard.js"></script>
+</body>
+</html>
