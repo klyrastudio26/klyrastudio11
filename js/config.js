@@ -142,10 +142,15 @@ class Collection {
 
   _convertValue(value) {
     if (typeof value === 'string') return { stringValue: value };
-    if (typeof value === 'number') return { numberValue: value };
+    if (typeof value === 'number') {
+      // Check if it's an integer or float
+      return Number.isInteger(value) 
+        ? { integerValue: value } 
+        : { doubleValue: value };
+    }
     if (typeof value === 'boolean') return { booleanValue: value };
     if (value instanceof Date) return { timestampValue: value.toISOString() };
-    if (typeof value === 'object') {
+    if (typeof value === 'object' && value !== null) {
       return { mapValue: { fields: this._convertData(value) } };
     }
     return { nullValue: null };
