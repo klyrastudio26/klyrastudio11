@@ -36,7 +36,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         
         showSuccess('Login successful! Redirecting...');
         setTimeout(() => {
-            window.location.href = 'user-dashboard.html';
+            window.location.href = '../index.html';
         }, 1500);
 
     } catch (error) {

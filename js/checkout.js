@@ -13,7 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadCheckoutData() {
     const data = sessionStorage.getItem('checkout_data');
     if (!data) {
-        alert('No cart data found. Redirecting to home.');
+        // If no checkout data in sessionStorage, redirect to home
+        // User should add items to cart from home page first
+        alert('Please add items to your cart from the home page first.');
         window.location.href = '../index.html';
         return;
     }

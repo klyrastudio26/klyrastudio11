@@ -54,6 +54,17 @@ class Collection {
         body: JSON.stringify({ fields: this._convertData(data) })
       });
       const result = await response.json();
+      
+      // Check if response has an error
+      if (result.error) {
+        throw new Error(result.error.message || 'API Error');
+      }
+      
+      // Check if name exists before calling split
+      if (!result.name) {
+        throw new Error('Invalid response from server: missing document name');
+      }
+      
       return { id: result.name.split('/').pop(), data: () => data };
     } catch (error) {
       console.error('Error adding document:', error);
@@ -70,19 +81,26 @@ class Collection {
       const response = await fetch(`${this.baseUrl}/${this.name}?key=${this.apiKey}`);
       const data = await response.json();
       
+      // Check if response has an error
+      if (data.error) {
+        throw new Error(data.error.message || 'API Error');
+      }
+      
       return {
         empty: !data.documents || data.documents.length === 0,
         forEach: function(callback) {
           if (data.documents) {
             data.documents.forEach(doc => {
-              callback({
-                id: doc.name.split('/').pop(),
-                data: () => this._extractFields(doc.fields)
-              });
+              if (doc.name) {
+                callback({
+                  id: doc.name.split('/').pop(),
+                  data: () => this._extractFields(doc.fields)
+                });
+              }
             });
           }
         },
-        docs: (data.documents || []).map(doc => ({
+        docs: (data.documents || []).filter(doc => doc.name).map(doc => ({
           id: doc.name.split('/').pop(),
           data: () => this._extractFields(doc.fields)
         })),

@@ -28,6 +28,10 @@
                 <i class="fas fa-th-large"></i>
                 <span>Collections</span>
             </a>
+            <a href="#" class="nav-item" onclick="switchTab('slideshow')">
+                <i class="fas fa-images"></i>
+                <span>Slideshow</span>
+            </a>
             <a href="#" class="nav-item" onclick="switchTab('orders')">
                 <i class="fas fa-shopping-cart"></i>
                 <span>Orders</span>
@@ -161,6 +165,22 @@
             <div class="collections-list">
                 <div class="collections-grid" id="collections-grid">
                     <div class="loading">Loading collections...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slideshow Tab -->
+        <div id="slideshow" class="tab-content">
+            <div class="tab-header">
+                <h2>Manage Slideshow</h2>
+                <button class="btn-primary" onclick="showAddSlideModal()">
+                    <i class="fas fa-plus"></i> Add Slide
+                </button>
+            </div>
+
+            <div class="slideshow-list">
+                <div class="slideshow-grid" id="slideshow-grid">
+                    <div class="loading">Loading slides...</div>
                 </div>
             </div>
         </div>
@@ -301,6 +321,31 @@
                     <input type="text" id="collection-image-url" placeholder="https://...">
                 </div>
                 <button type="submit" class="btn-primary">Add Collection</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Slideshow Modal -->
+    <div id="slideshow-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSlideModal()">&times;</span>
+            <h2>Add Slideshow Slide</h2>
+            <form id="slideshow-form">
+                <div class="form-group">
+                    <label>Slide Title</label>
+                    <input type="text" id="slide-title" required>
+                </div>
+                <div class="form-group">
+                    <label>Slide Description</label>
+                    <textarea id="slide-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Slide Image</label>
+                    <input type="file" id="slide-image" accept="image/*" required>
+                    <small>or paste image URL:</small>
+                    <input type="text" id="slide-image-url" placeholder="https://...">
+                </div>
+                <button type="submit" class="btn-primary">Add Slide</button>
             </form>
         </div>
     </div>

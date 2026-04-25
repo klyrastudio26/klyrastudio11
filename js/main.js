@@ -3,9 +3,11 @@ let currentSlide = 1;
 let cart = [];
 let products = [];
 let collections = [];
+let slides = [];
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+    loadSlides();
     loadProducts();
     loadCollections();
     loadCart();
@@ -51,6 +53,74 @@ function autoSlide() {
             currentSlide = 1;
         }
     }, 5000);
+}
+
+// ===== LOAD SLIDESHOW FROM FIRESTORE =====
+async function loadSlides() {
+    try {
+        const querySnapshot = await db.collection('slideshow').get();
+        slides = [];
+        querySnapshot.forEach((doc) => {
+            slides.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        // Sort by position
+        slides.sort((a, b) => (a.position || 0) - (b.position || 0));
+        
+        // If slides found, update the slideshow with them
+        if (slides.length > 0) {
+            updateSlideshowHTML();
+        }
+    } catch (error) {
+        console.error('Error loading slides:', error);
+        // Keep default slides if error
+    }
+}
+
+function updateSlideshowHTML() {
+    const slideshowContainer = document.querySelector('.slideshow-container');
+    if (!slideshowContainer) return;
+    
+    // Create new slides
+    const slidesHTML = slides.map((slide, index) => `
+        <div class="slide fade">
+            <img src="${slide.image || 'https://via.placeholder.com/1200x600'}" alt="${slide.title}">
+            <div class="slide-text">
+                <h2>${slide.title}</h2>
+                <p>${slide.description || ''}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    // Create new dots
+    const dotsHTML = slides.map((slide, index) => 
+        `<span class="dot" onclick="currentSlide(${index + 1})"></span>`
+    ).join('');
+    
+    // Find and replace old slides
+    const oldSlides = slideshowContainer.querySelectorAll('.slide');
+    oldSlides.forEach(slide => slide.remove());
+    
+    // Find the first position to insert new slides (before the prev/next buttons)
+    const prevButton = slideshowContainer.querySelector('.prev');
+    const dotsContainer = slideshowContainer.querySelector('.slide-dots');
+    
+    // Insert new slides HTML
+    if (prevButton) {
+        prevButton.insertAdjacentHTML('beforebegin', slidesHTML);
+    }
+    
+    // Update dots
+    if (dotsContainer) {
+        dotsContainer.innerHTML = dotsHTML;
+    }
+    
+    // Reset slide counter
+    currentSlide = 1;
+    showSlide(currentSlide);
 }
 
 // ===== PRODUCT FUNCTIONS =====

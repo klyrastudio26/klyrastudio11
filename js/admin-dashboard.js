@@ -29,6 +29,7 @@ async function loadDashboardData() {
         await Promise.all([
             loadProducts(),
             loadCollections(),
+            loadSlides(),
             loadOrders(),
             loadUsers()
         ]);
@@ -66,6 +67,7 @@ function switchTab(tabName) {
         'dashboard': 'Dashboard',
         'products': 'Manage Products',
         'collections': 'Manage Collections',
+        'slideshow': 'Manage Slideshow',
         'orders': 'Manage Orders',
         'payment-verification': 'Payment Verification',
         'users': 'Manage Users'
@@ -79,6 +81,8 @@ function switchTab(tabName) {
         displayProducts();
     } else if (tabName === 'collections') {
         displayCollections();
+    } else if (tabName === 'slideshow') {
+        displaySlides();
     } else if (tabName === 'orders') {
         displayOrders();
     } else if (tabName === 'payment-verification') {
@@ -546,6 +550,127 @@ function logout() {
         localStorage.removeItem('admin_login_time');
         window.location.href = 'admin-login.html';
     }
+}
+
+// ===== SLIDESHOW MANAGEMENT =====
+let allSlides = [];
+
+async function loadSlides() {
+    try {
+        const querySnapshot = await db.collection('slideshow').get();
+        allSlides = [];
+        querySnapshot.forEach((doc) => {
+            allSlides.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        // Sort by order/position
+        allSlides.sort((a, b) => (a.position || 0) - (b.position || 0));
+    } catch (error) {
+        console.error('Error loading slides:', error);
+        allSlides = [];
+    }
+}
+
+function displaySlides() {
+    const grid = document.getElementById('slideshow-grid');
+    
+    if (allSlides.length === 0) {
+        grid.innerHTML = '<div class="loading">No slides yet. Add your first slide!</div>';
+        return;
+    }
+    
+    grid.innerHTML = allSlides.map((slide, index) => `
+        <div class="slide-card">
+            <div class="slide-image">
+                <img src="${slide.image || 'https://via.placeholder.com/300x200'}" alt="${slide.title}">
+            </div>
+            <div class="slide-info">
+                <h3>${slide.title}</h3>
+                <p>${slide.description || ''}</p>
+                <div class="slide-position">Position: ${index + 1}</div>
+                <div class="slide-actions">
+                    <button class="btn-edit" onclick="editSlide('${slide.id}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteSlide('${slide.id}')">Delete</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showAddSlideModal() {
+    document.getElementById('slideshow-form').reset();
+    document.querySelector('#slideshow-modal h2').textContent = 'Add Slideshow Slide';
+    delete document.getElementById('slideshow-form').dataset.slideId;
+    document.getElementById('slideshow-modal').classList.add('show');
+}
+
+function closeSlideModal() {
+    document.getElementById('slideshow-modal').classList.remove('show');
+    delete document.getElementById('slideshow-form').dataset.slideId;
+}
+
+document.getElementById('slideshow-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('slide-title').value;
+    const description = document.getElementById('slide-description').value;
+    const imageUrl = document.getElementById('slide-image-url').value;
+    
+    const formData = {
+        title,
+        description,
+        image: imageUrl || 'https://via.placeholder.com/1200x600',
+        position: allSlides.length + 1,
+        createdAt: new Date().toISOString()
+    };
+    
+    try {
+        if (document.getElementById('slideshow-form').dataset.slideId) {
+            const slideId = document.getElementById('slideshow-form').dataset.slideId;
+            await db.collection('slideshow').doc(slideId).update(formData);
+            alert('Slide updated successfully!');
+            delete document.getElementById('slideshow-form').dataset.slideId;
+        } else {
+            await db.collection('slideshow').add(formData);
+            alert('Slide added successfully!');
+        }
+        
+        closeSlideModal();
+        await loadSlides();
+        displaySlides();
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+
+async function deleteSlide(slideId) {
+    if (confirm('Are you sure you want to delete this slide?')) {
+        try {
+            await db.collection('slideshow').doc(slideId).delete();
+            alert('Slide deleted successfully!');
+            await loadSlides();
+            displaySlides();
+        } catch (error) {
+            alert('Error deleting slide: ' + error.message);
+        }
+    }
+}
+
+async function editSlide(slideId) {
+    const slide = allSlides.find(s => s.id === slideId);
+    if (!slide) return;
+    
+    document.getElementById('slide-title').value = slide.title;
+    document.getElementById('slide-description').value = slide.description || '';
+    document.getElementById('slide-image-url').value = slide.image || '';
+    
+    // Store current slide ID for update
+    document.getElementById('slideshow-form').dataset.slideId = slideId;
+    document.querySelector('#slideshow-modal h2').textContent = 'Edit Slide';
+    
+    document.getElementById('slideshow-modal').classList.add('show');
 }
 
 // ===== SIDEBAR TOGGLE =====
