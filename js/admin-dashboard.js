@@ -105,6 +105,7 @@ async function loadProducts() {
         });
     } catch (error) {
         console.error('Error loading products:', error);
+        allProducts = [];
     }
 }
 
@@ -354,17 +355,47 @@ function displayOrders() {
             <td><span class="status-badge status-${(order.status || 'pending').toLowerCase()}">${order.status || 'Pending'}</span></td>
             <td><span class="status-badge status-${(order.paymentStatus || 'pending').toLowerCase()}">${order.paymentStatus || 'Pending'}</span></td>
             <td>
-                <button class="btn-edit" onclick="viewOrderDetails('${order.id}')">View</button>
+                <button class="btn-edit" onclick="verifyOrderPayment('${order.id}')" style="padding: 5px 10px; margin-right: 5px; font-size: 12px;">Verify</button>
+                <button class="btn-edit" onclick="markOrderReceived('${order.id}')" style="padding: 5px 10px; font-size: 12px; background-color: #28a745;">Received</button>
             </td>
         </tr>
     `).join('');
 }
 
-function viewOrderDetails(orderId) {
+function verifyOrderPayment(orderId) {
     const order = allOrders.find(o => o.id === orderId);
     if (!order) return;
     
-    alert(`Order Details:\n\nID: ${order.id}\nCustomer: ${order.customerName}\nPhone: ${order.customerPhone}\nAmount: ₹${order.total}\nStatus: ${order.status}\nPayment: ${order.paymentStatus}`);
+    if (confirm(`Verify payment for ${order.customerName}?\n\nAmount: ₹${order.total}`)) {
+        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        const index = orders.findIndex(o => o.id === orderId);
+        if (index >= 0) {
+            orders[index].paymentStatus = 'verified';
+            orders[index].verifiedAt = new Date().toISOString();
+            localStorage.setItem('orders', JSON.stringify(orders));
+            allOrders[index].paymentStatus = 'verified';
+            displayOrders();
+            alert('✅ Payment verified successfully!');
+        }
+    }
+}
+
+function markOrderReceived(orderId) {
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    if (confirm(`Mark order as received for ${order.customerName}?`)) {
+        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        const index = orders.findIndex(o => o.id === orderId);
+        if (index >= 0) {
+            orders[index].status = 'received';
+            orders[index].receivedAt = new Date().toISOString();
+            localStorage.setItem('orders', JSON.stringify(orders));
+            allOrders[index].status = 'received';
+            displayOrders();
+            alert('✅ Order marked as received!');
+        }
+    }
 }
 
 async function exportOrdersToSheets() {
