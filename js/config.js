@@ -86,6 +86,33 @@ class Collection {
         throw new Error(data.error.message || 'API Error');
       }
       
+      // Helper function to extract values
+      const extractValue = (field) => {
+        if (field.stringValue) return field.stringValue;
+        if (field.integerValue) return parseInt(field.integerValue);
+        if (field.doubleValue) return parseFloat(field.doubleValue);
+        if (field.numberValue) return parseFloat(field.numberValue);
+        if (field.booleanValue) return field.booleanValue;
+        if (field.timestampValue) return new Date(field.timestampValue);
+        if (field.mapValue) {
+          const result = {};
+          for (let key in field.mapValue.fields) {
+            result[key] = extractValue(field.mapValue.fields[key]);
+          }
+          return result;
+        }
+        return null;
+      };
+      
+      // Helper function to extract fields
+      const extractFields = (fields) => {
+        const result = {};
+        for (let key in fields) {
+          result[key] = extractValue(fields[key]);
+        }
+        return result;
+      };
+      
       return {
         empty: !data.documents || data.documents.length === 0,
         forEach: function(callback) {
@@ -94,7 +121,7 @@ class Collection {
               if (doc.name) {
                 callback({
                   id: doc.name.split('/').pop(),
-                  data: () => this._extractFields(doc.fields)
+                  data: () => extractFields(doc.fields)
                 });
               }
             });
@@ -102,29 +129,8 @@ class Collection {
         },
         docs: (data.documents || []).filter(doc => doc.name).map(doc => ({
           id: doc.name.split('/').pop(),
-          data: () => this._extractFields(doc.fields)
-        })),
-        _extractFields: (fields) => {
-          const result = {};
-          for (let key in fields) {
-            result[key] = this._extractValue(fields[key]);
-          }
-          return result;
-        },
-        _extractValue: (field) => {
-          if (field.stringValue) return field.stringValue;
-          if (field.numberValue) return parseFloat(field.numberValue);
-          if (field.booleanValue) return field.booleanValue;
-          if (field.timestampValue) return new Date(field.timestampValue);
-          if (field.mapValue) {
-            const result = {};
-            for (let key in field.mapValue.fields) {
-              result[key] = this._extractValue(field.mapValue.fields[key]);
-            }
-            return result;
-          }
-          return null;
-        }
+          data: () => extractFields(doc.fields)
+        }))
       };
     } catch (error) {
       console.error('Error getting collection:', error);
