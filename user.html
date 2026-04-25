@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Portal | KlyraStudio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <span class="logo-mark">K</span>
+      <div>
+        <h1>KlyraStudio</h1>
+        <p>Customer Portal</p>
+      </div>
+    </div>
+    <nav class="nav-menu">
+      <div class="dropdown">
+        <button class="button button-secondary dropdown-button">Menu</button>
+        <div class="dropdown-content">
+          <a href="index.html">Home</a>
+          <a href="admin.html">Admin</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="admin-main">
+    <section id="userLoginSection" class="admin-card admin-login-card">
+      <h2>Customer Login</h2>
+      <form id="userLoginForm" class="admin-form">
+        <label>
+          Phone Number
+          <input type="tel" id="userPhone" placeholder="Enter your number" required />
+        </label>
+        <button type="submit" class="button button-primary">Login</button>
+      </form>
+      <p class="hint">Enter your phone number to view your orders.</p>
+    </section>
+
+    <section id="userDashboardSection" class="admin-card admin-dashboard" hidden>
+      <h2>Your Orders</h2>
+      <div id="userOrderTable" class="table-scroll"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 KlyraStudio. Customer portal for order tracking.</p>
+  </footer>
+
+  <script src="user.js"></script>
+</body>
+</html>
