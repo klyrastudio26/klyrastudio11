@@ -164,6 +164,13 @@
         </div>
     </footer>
 
+    <!-- Debug Panel -->
+    <div id="debug-panel" style="position: fixed; bottom: 20px; right: 20px; background: #1a1a1a; color: #d4af37; padding: 15px; border-radius: 5px; font-size: 11px; max-width: 400px; max-height: 200px; overflow-y: auto; border: 1px solid #d4af37; z-index: 10000; display: none;">
+        <div><strong>DEBUG INFO</strong></div>
+        <div id="debug-content"></div>
+    </div>
+    <button onclick="toggleDebug()" style="position: fixed; bottom: 20px; right: 20px; padding: 8px 12px; background: #d4af37; color: #1a1a1a; border: none; border-radius: 5px; cursor: pointer; z-index: 9999;">🐛</button>
+
     <script src="js/db.js"></script>
     <script src="js/main.js"></script>
 </body>

@@ -5,8 +5,33 @@ let products = [];
 let collections = [];
 let slides = [];
 
+// Debug function
+function toggleDebug() {
+    const panel = document.getElementById('debug-panel');
+    const content = document.getElementById('debug-content');
+    
+    if (panel.style.display === 'none') {
+        content.innerHTML = `
+            <div>Products in localStorage: ${localStorage.getItem('products')?.length || 0} chars</div>
+            <div>Collections in localStorage: ${localStorage.getItem('collections')?.length || 0} chars</div>
+            <div>Slideshow in localStorage: ${localStorage.getItem('slideshow')?.length || 0} chars</div>
+            <div>Current products array: ${products.length} items</div>
+            <div>Current collections array: ${collections.length} items</div>
+            <div>Current slides array: ${slides.length} items</div>
+        `;
+        panel.style.display = 'block';
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('=== DEBUG: Page loaded ===');
+    console.log('localStorage.products:', localStorage.getItem('products'));
+    console.log('localStorage.collections:', localStorage.getItem('collections'));
+    console.log('localStorage.slideshow:', localStorage.getItem('slideshow'));
+    
     loadSlides();
     loadProducts();
     loadCollections();
@@ -66,6 +91,8 @@ async function loadSlides() {
                 ...doc.data()
             });
         });
+        
+        console.log('Loaded slides:', slides);
         
         // Sort by position
         slides.sort((a, b) => (a.position || 0) - (b.position || 0));
@@ -134,6 +161,7 @@ async function loadProducts() {
                 ...doc.data()
             });
         });
+        console.log('Loaded products:', products);
         displayProducts(products);
     } catch (error) {
         console.error('Error loading products:', error);
@@ -154,6 +182,9 @@ async function loadCollections() {
             });
             filterHTML += `<button class="filter-btn" onclick="filterProducts('${collectionData.name}')">${collectionData.name}</button>`;
         });
+        
+        console.log('Loaded collections:', collections);
+        
         document.getElementById('collection-filters').innerHTML = filterHTML;
     } catch (error) {
         console.error('Error loading collections:', error);
@@ -162,6 +193,9 @@ async function loadCollections() {
 
 function displayProducts(productsToShow) {
     const grid = document.getElementById('products-grid');
+    console.log('displayProducts called with:', productsToShow);
+    console.log('Number of products:', productsToShow.length);
+    
     if (productsToShow.length === 0) {
         grid.innerHTML = '<div class="loading">No products available</div>';
         return;
