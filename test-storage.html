@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Storage Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 3px;
+            border-left: 4px solid #d4af37;
+        }
+        button {
+            background: #d4af37;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #c49f2e;
+        }
+        .data-box {
+            background: #1a1a1a;
+            color: #d4af37;
+            padding: 15px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+            width: 300px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Storage Diagnostic Tool</h1>
+        
+        <div class="section">
+            <h2>Test Add Product</h2>
+            <input type="text" id="test-name" placeholder="Product name" value="Test Product">
+            <input type="text" id="test-collection" placeholder="Collection" value="Test Collection">
+            <input type="number" id="test-price" placeholder="Price" value="999">
+            <button onclick="testAddProduct()">Add Test Product</button>
+            <div id="add-result"></div>
+        </div>
+
+        <div class="section">
+            <h2>View localStorage</h2>
+            <button onclick="viewAllStorage()">View All Storage</button>
+            <button onclick="clearAllStorage()">Clear All Storage</button>
+            <div id="storage-view" class="data-box"></div>
+        </div>
+
+        <div class="section">
+            <h2>View Raw Data</h2>
+            <h3>Products:</h3>
+            <button onclick="viewProducts()">View Products</button>
+            <div id="products-view" class="data-box"></div>
+            
+            <h3>Collections:</h3>
+            <button onclick="viewCollections()">View Collections</button>
+            <div id="collections-view" class="data-box"></div>
+            
+            <h3>Slideshow:</h3>
+            <button onclick="viewSlides()">View Slides</button>
+            <div id="slides-view" class="data-box"></div>
+        </div>
+
+        <div class="section">
+            <h2>Test Sync</h2>
+            <button onclick="testSync()">Test Cross-Tab Sync</button>
+            <div id="sync-result"></div>
+        </div>
+    </div>
+
+    <script src="js/db.js"></script>
+    <script>
+        function testAddProduct() {
+            const name = document.getElementById('test-name').value;
+            const collection = document.getElementById('test-collection').value;
+            const price = parseFloat(document.getElementById('test-price').value);
+            
+            const result = document.getElementById('add-result');
+            
+            try {
+                const items = JSON.parse(localStorage.getItem('products') || '[]');
+                const newProduct = {
+                    id: 'test_' + Date.now(),
+                    name: name,
+                    collection: collection,
+                    price: price,
+                    description: 'Test product added via diagnostic tool',
+                    image: 'https://via.placeholder.com/280x250',
+                    createdAt: new Date().toISOString()
+                };
+                
+                items.push(newProduct);
+                localStorage.setItem('products', JSON.stringify(items));
+                
+                result.innerHTML = `<div class="success">✓ Product added successfully!<br>ID: ${newProduct.id}<br>Total products: ${items.length}</div>`;
+                viewProducts();
+            } catch (error) {
+                result.innerHTML = `<div class="error">✗ Error: ${error.message}</div>`;
+            }
+        }
+
+        function viewAllStorage() {
+            const storage = document.getElementById('storage-view');
+            let content = 'localStorage contents:\n\n';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                content += `${key}: ${value.length} chars\n`;
+            }
+            
+            storage.textContent = content;
+        }
+
+        function viewProducts() {
+            const view = document.getElementById('products-view');
+            try {
+                const data = localStorage.getItem('products');
+                const parsed = JSON.parse(data || '[]');
+                view.textContent = `Products (${parsed.length} items):\n\n${JSON.stringify(parsed, null, 2)}`;
+            } catch (error) {
+                view.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function viewCollections() {
+            const view = document.getElementById('collections-view');
+            try {
+                const data = localStorage.getItem('collections');
+                const parsed = JSON.parse(data || '[]');
+                view.textContent = `Collections (${parsed.length} items):\n\n${JSON.stringify(parsed, null, 2)}`;
+            } catch (error) {
+                view.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function viewSlides() {
+            const view = document.getElementById('slides-view');
+            try {
+                const data = localStorage.getItem('slideshow');
+                const parsed = JSON.parse(data || '[]');
+                view.textContent = `Slides (${parsed.length} items):\n\n${JSON.stringify(parsed, null, 2)}`;
+            } catch (error) {
+                view.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function clearAllStorage() {
+            if (confirm('Are you sure? This will delete all stored data.')) {
+                localStorage.clear();
+                db.initializeData();
+                document.getElementById('storage-view').innerHTML = '<div class="success">✓ Storage cleared and reinitialized</div>';
+                viewAllStorage();
+            }
+        }
+
+        function testSync() {
+            const result = document.getElementById('sync-result');
+            result.innerHTML = '<div class="success">ℹ️ Open this page in multiple tabs to test if data syncs across tabs</div>';
+            
+            // Add an event listener for storage changes
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'products') {
+                    result.innerHTML += '<div class="success">✓ Storage change detected! Products updated in another tab</div>';
+                }
+            });
+        }
+
+        // Auto-load data on page load
+        window.addEventListener('load', function() {
+            console.log('Storage diagnostic page loaded');
+            viewAllStorage();
+        });
+    </script>
+</body>
+</html>
