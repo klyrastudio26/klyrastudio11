@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Klyra - Complete Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 { color: #d4af37; }
+        h2 { color: #333; border-bottom: 2px solid #d4af37; padding-bottom: 10px; }
+        .test-item { margin: 15px 0; padding: 15px; background: #f9f9f9; border-left: 4px solid #d4af37; }
+        button {
+            background: #d4af37;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        button:hover { background: #c49f2e; }
+        .success { background: #d4edda; color: #155724; padding: 10px; border-radius: 3px; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 3px; }
+        .info { background: #d1ecf1; color: #0c5460; padding: 10px; border-radius: 3px; }
+        pre {
+            background: #1a1a1a;
+            color: #d4af37;
+            padding: 15px;
+            border-radius: 3px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Klyra Studio - Complete Diagnostic</h1>
+        
+        <div class="test-item">
+            <h2>1. Database Status</h2>
+            <button onclick="testDBStatus()">Test DB Connection</button>
+            <button onclick="testIndexedDB()">Check IndexedDB</button>
+            <button onclick="testLocalStorage()">Check LocalStorage</button>
+            <div id="db-status"></div>
+        </div>
+
+        <div class="test-item">
+            <h2>2. Data Retrieval Tests</h2>
+            <button onclick="testLoadProducts()">Load Products</button>
+            <button onclick="testLoadCollections()">Load Collections</button>
+            <button onclick="testLoadSlides()">Load Slides</button>
+            <div id="data-status"></div>
+        </div>
+
+        <div class="test-item">
+            <h2>3. Add Test Data</h2>
+            <button onclick="addTestProduct()">Add Test Product</button>
+            <button onclick="addTestCollection()">Add Test Collection</button>
+            <button onclick="addTestSlide()">Add Test Slide</button>
+            <div id="add-status"></div>
+        </div>
+
+        <div class="test-item">
+            <h2>4. Clear & Reset</h2>
+            <button onclick="clearAllData()">Clear ALL Data</button>
+            <button onclick="clearIndexedDB()">Clear IndexedDB</button>
+            <button onclick="clearLocalStorage()">Clear LocalStorage</button>
+            <div id="clear-status"></div>
+        </div>
+
+        <div class="test-item">
+            <h2>5. Data Viewer</h2>
+            <div class="grid-2">
+                <div>
+                    <h3>Products</h3>
+                    <button onclick="viewProducts()">View Products</button>
+                    <div id="products-view"></div>
+                </div>
+                <div>
+                    <h3>Collections</h3>
+                    <button onclick="viewCollections()">View Collections</button>
+                    <div id="collections-view"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/db.js"></script>
+    <script>
+        async function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function testDBStatus() {
+            const output = document.getElementById('db-status');
+            output.innerHTML = '<div class="info">Testing...</div>';
+            
+            try {
+                await db.initPromise;
+                if (db.useIndexedDB) {
+                    output.innerHTML = '<div class="success">✓ Using IndexedDB (unlimited storage)</div>';
+                } else {
+                    output.innerHTML = '<div class="info">✓ Using localStorage (fallback mode)</div>';
+                }
+            } catch (e) {
+                output.innerHTML = `<div class="error">✗ Error: ${e.message}</div>`;
+            }
+        }
+
+        async function testIndexedDB() {
+            const output = document.getElementById('db-status');
+            if (!window.indexedDB) {
+                output.innerHTML += '<div class="error">✗ IndexedDB not supported</div>';
+                return;
+            }
+            output.innerHTML += '<div class="success">✓ IndexedDB supported</div>';
+        }
+
+        async function testLocalStorage() {
+            const output = document.getElementById('db-status');
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                output.innerHTML += '<div class="success">✓ LocalStorage working</div>';
+            } catch (e) {
+                output.innerHTML += `<div class="error">✗ LocalStorage error: ${e.message}</div>`;
+            }
+        }
+
+        async function testLoadProducts() {
+            const output = document.getElementById('data-status');
+            output.innerHTML = '<div class="info">Loading products...</div>';
+            
+            try {
+                await db.initPromise;
+                const result = await db.collection('products').get();
+                output.innerHTML = `<div class="success">✓ Loaded ${result.docs.length} products</div><pre>${JSON.stringify(result.docs.map(d => ({id: d.id, ...d.data()})), null, 2)}</pre>`;
+            } catch (e) {
+                output.innerHTML = `<div class="error">✗ Error: ${e.message}</div>`;
+            }
+        }
+
+        async function testLoadCollections() {
+            const output = document.getElementById('data-status');
+            output.innerHTML += '<div class="info">Loading collections...</div>';
+            
+            try {
+                await db.initPromise;
+                const result = await db.collection('collections').get();
+                output.innerHTML += `<div class="success">✓ Loaded ${result.docs.length} collections</div>`;
+            } catch (e) {
+                output.innerHTML += `<div class="error">✗ Error: ${e.message}</div>`;
+            }
+        }
+
+        async function testLoadSlides() {
+            const output = document.getElementById('data-status');
+            output.innerHTML += '<div class="info">Loading slides...</div>';
+            
+            try {
+                await db.initPromise;
+                const result = await db.collection('slideshow').get();
+                output.innerHTML += `<div class="success">✓ Loaded ${result.docs.length} slides</div>`;
+            } catch (e) {
+                output.innerHTML += `<div class="error">✗ Error: ${e.message}</div>`;
+            }
+        }
+
+        async function addTestProduct() {
+            const output = document.getElementById('add-status');
+            output.innerHTML = '<div class="info">Adding test product...</div>';
+            
+            try {
+                await db.initPromise;
+                const result = await db.collection('products').add({
+                    name: 'Test Product ' + Date.now(),
+                    collection: 'Test',
+                    price: 999,
+                    description: 'Auto-generated test product',
+                    image: 'https://via.placeholder.com/280x250',
+                    createdAt: new Date().toISOString()
+                });
+                output.innerHTML = `<div class="success">✓ Added product with ID: ${result.id}</div>`;
+                await delay(1000);
+                await testLoadProducts();
+            } catch (e) {
+                output.innerHTML = `<div class="error">✗ Error: ${e.message}</div>`;
+            }
+        }
+
+        async function addTestCollection() {
+            const output = document.getElementById('add-status');
+            output.innerHTML += '<div class="info">Adding test collection...</div>';
+            
+            try {
+                await db.initPromise;
+                const result = await db.collection('collections').add({
+                    name: 'Test Collection ' + Date.now(),
+                    description: 'Auto-generated test collection',
+                    image: 'https://via.placeholder.com/200x150',
+                    createdAt: new Date().toISOString()
+                });
+                output.innerHTML += `<div class="success">✓ Added collection with ID: ${result.id}</div>`;
+            } catch (e) {
+                output.innerHTML += `<div class="error">✗ Error: ${e.message}</div>`;
+            }
+        }
+
+        async function addTestSlide() {
+            const output = document.getElementById('add-status');
+            output.innerHTML += '<div class="info">Adding test slide...</div>';
+            
+            try {
+                await db.initPromise;
+                const result = await db.collection('slideshow').add({
+                    title: 'Test Slide ' + Date.now(),
+                    description: 'Auto-generated test slide',
+                    image: 'https://via.placeholder.com/1200x600',
+                    position: 1,
+                    createdAt: new Date().toISOString()
+                });
+                output.innerHTML += `<div class="success">✓ Added slide with ID: ${result.id}</div>`;
+            } catch (e) {
+                output.innerHTML += `<div class="error">✗ Error: ${e.message}</div>`;
+            }
+        }
+
+        async function clearAllData() {
+            if (!confirm('Are you sure? This will delete ALL data.')) return;
+            const output = document.getElementById('clear-status');
+            
+            try {
+                // Clear IndexedDB
+                const collections = ['products', 'collections', 'slideshow', 'orders', 'users', 'cart'];
+                await db.initPromise;
+                
+                for (const name of collections) {
+                    const result = await db.collection(name).get();
+                    for (const doc of result.docs) {
+                        await db.collection(name).doc(doc.id).delete();
+                    }
+                }
+                
+                // Clear localStorage
+                localStorage.clear();
+                
+                output.innerHTML = '<div class="success">✓ All data cleared</div>';
+            } catch (e) {
+                output.innerHTML = `<div class="error">✗ Error: ${e.message}</div>`;
+            }
+        }
+
+        async function clearIndexedDB() {
+            const output = document.getElementById('clear-status');
+            output.innerHTML += '<div class="info">Clearing IndexedDB...</div>';
+            
+            try {
+                const collections = ['products', 'collections', 'slideshow', 'orders', 'users', 'cart'];
+                await db.initPromise;
+                
+                for (const name of collections) {
+                    const result = await db.collection(name).get();
+                    for (const doc of result.docs) {
+                        await db.collection(name).doc(doc.id).delete();
+                    }
+                }
+                
+                output.innerHTML += '<div class="success">✓ IndexedDB cleared</div>';
+            } catch (e) {
+                output.innerHTML += `<div class="error">✗ Error: ${e.message}</div>`;
+            }
+        }
+
+        async function clearLocalStorage() {
+            const output = document.getElementById('clear-status');
+            localStorage.clear();
+            output.innerHTML += '<div class="success">✓ LocalStorage cleared</div>';
+        }
+
+        async function viewProducts() {
+            const output = document.getElementById('products-view');
+            try {
+                await db.initPromise;
+                const result = await db.collection('products').get();
+                if (result.docs.length === 0) {
+                    output.innerHTML = '<div class="info">No products</div>';
+                } else {
+                    output.innerHTML = `<pre>${JSON.stringify(result.docs.map(d => ({id: d.id, ...d.data()})), null, 2)}</pre>`;
+                }
+            } catch (e) {
+                output.innerHTML = `<div class="error">Error: ${e.message}</div>`;
+            }
+        }
+
+        async function viewCollections() {
+            const output = document.getElementById('collections-view');
+            try {
+                await db.initPromise;
+                const result = await db.collection('collections').get();
+                if (result.docs.length === 0) {
+                    output.innerHTML = '<div class="info">No collections</div>';
+                } else {
+                    output.innerHTML = `<pre>${JSON.stringify(result.docs.map(d => ({id: d.id, ...d.data()})), null, 2)}</pre>`;
+                }
+            } catch (e) {
+                output.innerHTML = `<div class="error">Error: ${e.message}</div>`;
+            }
+        }
+
+        // Run initial tests on page load
+        window.addEventListener('load', async () => {
+            await testDBStatus();
+            await testIndexedDB();
+            await testLocalStorage();
+        });
+    </script>
+</body>
+</html>
