@@ -25,6 +25,15 @@ function toggleDebug() {
     }
 }
 
+// Reload all data from localStorage
+async function reloadAllData() {
+    console.log('Manually reloading all data from localStorage');
+    await loadSlides();
+    await loadProducts();
+    await loadCollections();
+    alert('Data refreshed!');
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     console.log('=== DEBUG: Page loaded ===');
