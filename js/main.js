@@ -147,11 +147,12 @@ async function loadCollections() {
         collections = [];
         let filterHTML = '';
         querySnapshot.forEach((doc) => {
+            const collectionData = doc.data();
             collections.push({
                 id: doc.id,
-                ...doc.data()
+                ...collectionData
             });
-            filterHTML += `<button class="filter-btn" onclick="filterProducts('${doc.id}')">${doc.data().name}</button>`;
+            filterHTML += `<button class="filter-btn" onclick="filterProducts('${collectionData.name}')">${collectionData.name}</button>`;
         });
         document.getElementById('collection-filters').innerHTML = filterHTML;
     } catch (error) {

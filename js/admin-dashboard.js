@@ -152,15 +152,26 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
     const collection = document.getElementById('product-collection').value;
     const price = parseFloat(document.getElementById('product-price').value);
     const description = document.getElementById('product-description').value;
-    const imageUrl = document.getElementById('product-image-url').value;
+    const imageFile = document.getElementById('product-image').files[0];
     
     try {
+        let imageData = 'https://via.placeholder.com/280x250';
+        
+        // Convert image file to base64
+        if (imageFile) {
+            imageData = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(imageFile);
+            });
+        }
+        
         await db.collection('products').add({
             name,
             collection,
             price,
             description,
-            image: imageUrl || 'https://via.placeholder.com/280x250',
+            image: imageData,
             createdAt: new Date().toISOString()
         });
         
@@ -261,16 +272,27 @@ document.getElementById('collection-form')?.addEventListener('submit', async (e)
     
     const name = document.getElementById('collection-name').value;
     const description = document.getElementById('collection-description').value;
-    const imageUrl = document.getElementById('collection-image-url').value;
-    
-    const formData = {
-        name,
-        description,
-        image: imageUrl || 'https://via.placeholder.com/200x150',
-        createdAt: new Date().toISOString()
-    };
+    const imageFile = document.getElementById('collection-image').files[0];
     
     try {
+        let imageData = 'https://via.placeholder.com/200x150';
+        
+        // Convert image file to base64
+        if (imageFile) {
+            imageData = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(imageFile);
+            });
+        }
+        
+        const formData = {
+            name,
+            description,
+            image: imageData,
+            createdAt: new Date().toISOString()
+        };
+        
         if (document.getElementById('collection-form').dataset.collectionId) {
             const collectionId = document.getElementById('collection-form').dataset.collectionId;
             await db.collection('collections').doc(collectionId).update(formData);
@@ -647,17 +669,28 @@ document.getElementById('slideshow-form')?.addEventListener('submit', async (e) 
     
     const title = document.getElementById('slide-title').value;
     const description = document.getElementById('slide-description').value;
-    const imageUrl = document.getElementById('slide-image-url').value;
-    
-    const formData = {
-        title,
-        description,
-        image: imageUrl || 'https://via.placeholder.com/1200x600',
-        position: allSlides.length + 1,
-        createdAt: new Date().toISOString()
-    };
+    const imageFile = document.getElementById('slide-image').files[0];
     
     try {
+        let imageData = 'https://via.placeholder.com/1200x600';
+        
+        // Convert image file to base64
+        if (imageFile) {
+            imageData = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(imageFile);
+            });
+        }
+        
+        const formData = {
+            title,
+            description,
+            image: imageData,
+            position: allSlides.length + 1,
+            createdAt: new Date().toISOString()
+        };
+        
         if (document.getElementById('slideshow-form').dataset.slideId) {
             const slideId = document.getElementById('slideshow-form').dataset.slideId;
             await db.collection('slideshow').doc(slideId).update(formData);

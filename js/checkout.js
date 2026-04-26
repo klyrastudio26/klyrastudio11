@@ -289,10 +289,15 @@ if (document.getElementById('signup-form')) {
                 createdAt: new Date().toISOString()
             });
 
-            showSignupSuccess('Account created successfully! Redirecting to login...');
+            // Save user data to localStorage
+            localStorage.setItem('user_phone', phone);
+            localStorage.setItem('user_data', JSON.stringify({phone}));
+
+            showSignupSuccess('Account created successfully! Redirecting to home...');
             setTimeout(() => {
-                window.location.href = 'user-login.html';
-            }, 2000);
+                // Stay on home page with cart preserved
+                window.location.href = '../index.html';
+            }, 1500);
 
         } catch (error) {
             console.error('Signup error:', error);
