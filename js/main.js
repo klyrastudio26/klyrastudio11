@@ -5,6 +5,23 @@ let products = [];
 let collections = [];
 let slides = [];
 
+// Wait for db to be defined globally
+async function waitForDB() {
+  let attempts = 0;
+  while (typeof db === 'undefined' && attempts < 100) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    attempts++;
+  }
+  
+  if (typeof db === 'undefined') {
+    console.error('❌ DB failed to load after 5 seconds');
+    throw new Error('DB not loaded');
+  }
+  
+  await db.initPromise;
+  console.log('✓ DB ready');
+}
+
 // Debug function
 function toggleDebug() {
     const panel = document.getElementById('debug-panel');
@@ -36,21 +53,25 @@ async function reloadAllData() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('=== DEBUG: Page loaded ===');
-    console.log('Waiting for IndexedDB initialization...');
+    console.log('=== Page loaded - waiting for DB ===');
     
-    // Wait for db to be ready
-    await db.initPromise;
-    
-    console.log('IndexedDB ready, loading data...');
-    await loadSlides();
-    await loadProducts();
-    await loadCollections();
-    await loadCart();
-    showSlide(currentSlide);
-    autoSlide();
-    
-    console.log('Data loading complete');
+    try {
+        // Wait for db to be ready
+        await waitForDB();
+        
+        console.log('Loading data...');
+        await loadSlides();
+        await loadProducts();
+        await loadCollections();
+        await loadCart();
+        showSlide(currentSlide);
+        autoSlide();
+        
+        console.log('✓ Initialization complete');
+    } catch (error) {
+        console.error('❌ Initialization error:', error);
+        document.getElementById('products-grid').innerHTML = '<div class="loading">Error initializing. Please refresh the page.</div>';
+    }
 });
 
 // ===== SLIDESHOW FUNCTIONS =====

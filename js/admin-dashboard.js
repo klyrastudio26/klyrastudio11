@@ -10,8 +10,30 @@ let allCollections = [];
 let allOrders = [];
 let allUsers = [];
 
+// Wait for db to be defined globally
+async function waitForDB() {
+  let attempts = 0;
+  while (typeof db === 'undefined' && attempts < 100) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    attempts++;
+  }
+  
+  if (typeof db === 'undefined') {
+    console.error('❌ DB failed to load');
+    return false;
+  }
+  
+  try {
+    await db.initPromise;
+    return true;
+  } catch (e) {
+    console.error('DB init error:', e);
+    return false;
+  }
+}
+
 // Check admin authentication on page load
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     const adminSession = localStorage.getItem('admin_session');
     if (!adminSession) {
         window.location.href = 'admin-login.html';
@@ -21,11 +43,18 @@ window.addEventListener('load', () => {
     const adminName = localStorage.getItem('admin_username');
     document.getElementById('admin-name').textContent = adminName || 'Admin';
     
-    loadDashboardData();
+    await loadDashboardData();
 });
 
 async function loadDashboardData() {
     try {
+        // Wait for db to be ready
+        const dbReady = await waitForDB();
+        if (!dbReady) {
+            console.error('DB not ready');
+            return;
+        }
+        
         await Promise.all([
             loadProducts(),
             loadCollections(),

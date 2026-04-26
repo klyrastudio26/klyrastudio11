@@ -5,6 +5,28 @@ const CONTACT_WHATSAPP = '063811 63108';
 let checkoutData = null;
 let currentStep = 1;
 
+// Wait for db to be defined globally
+async function waitForDB() {
+  let attempts = 0;
+  while (typeof db === 'undefined' && attempts < 100) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    attempts++;
+  }
+  
+  if (typeof db === 'undefined') {
+    console.error('❌ DB failed to load');
+    return false;
+  }
+  
+  try {
+    await db.initPromise;
+    return true;
+  } catch (e) {
+    console.error('DB init error:', e);
+    return false;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadCheckoutData();
     setupPaymentScreenshotUpload();
@@ -274,6 +296,13 @@ if (document.getElementById('signup-form')) {
         }
 
         try {
+            // Wait for db to be ready
+            const dbReady = await waitForDB();
+            if (!dbReady) {
+                showSignupError('Database connection failed. Please try again.');
+                return;
+            }
+
             // Check if user already exists
             const existingUser = await db.collection('users').where('phone', '==', phone).get();
             

@@ -1,11 +1,28 @@
 // Migration script: Move data from localStorage to IndexedDB
 // This runs automatically on first page load
 
+async function waitForDB() {
+  // Wait for db to be defined globally
+  let attempts = 0;
+  while (typeof db === 'undefined' && attempts < 100) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    attempts++;
+  }
+  
+  if (typeof db === 'undefined') {
+    console.error('DB failed to load');
+    return;
+  }
+  
+  // Wait for db to initialize
+  await db.initPromise;
+}
+
 async function migrateLocalStorageToIndexedDB() {
   console.log('Checking for localStorage data to migrate...');
   
   // Wait for db to initialize
-  await db.initPromise;
+  await waitForDB();
   
   const collections = ['products', 'collections', 'slideshow', 'orders', 'users'];
   let itemsMigrated = 0;
@@ -46,8 +63,8 @@ async function migrateLocalStorageToIndexedDB() {
   return itemsMigrated;
 }
 
-// Run migration automatically
-document.addEventListener('DOMContentLoaded', async () => {
+// Run migration automatically after db is defined
+async function startMigration() {
   const migrationDone = sessionStorage.getItem('migration_done');
   if (!migrationDone) {
     try {
@@ -57,4 +74,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Migration failed:', error);
     }
   }
+}
+
+// Try to start migration immediately, then on DOMContentLoaded as fallback
+startMigration().catch(() => {
+  document.addEventListener('DOMContentLoaded', startMigration);
 });
