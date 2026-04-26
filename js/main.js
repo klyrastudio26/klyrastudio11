@@ -12,12 +12,12 @@ function toggleDebug() {
     
     if (panel.style.display === 'none') {
         content.innerHTML = `
-            <div>Products in localStorage: ${localStorage.getItem('products')?.length || 0} chars</div>
-            <div>Collections in localStorage: ${localStorage.getItem('collections')?.length || 0} chars</div>
-            <div>Slideshow in localStorage: ${localStorage.getItem('slideshow')?.length || 0} chars</div>
-            <div>Current products array: ${products.length} items</div>
-            <div>Current collections array: ${collections.length} items</div>
-            <div>Current slides array: ${slides.length} items</div>
+            <div><strong>IndexedDB Status</strong></div>
+            <div>Products in memory: ${products.length} items</div>
+            <div>Collections in memory: ${collections.length} items</div>
+            <div>Slides in memory: ${slides.length} items</div>
+            <div>Cart items: ${cart.length} items</div>
+            <div style="margin-top: 10px; font-size: 10px; color: #999;">IndexedDB has unlimited storage</div>
         `;
         panel.style.display = 'block';
     } else {
@@ -35,18 +35,22 @@ async function reloadAllData() {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('=== DEBUG: Page loaded ===');
-    console.log('localStorage.products:', localStorage.getItem('products'));
-    console.log('localStorage.collections:', localStorage.getItem('collections'));
-    console.log('localStorage.slideshow:', localStorage.getItem('slideshow'));
+    console.log('Waiting for IndexedDB initialization...');
     
-    loadSlides();
-    loadProducts();
-    loadCollections();
-    loadCart();
+    // Wait for db to be ready
+    await db.initPromise;
+    
+    console.log('IndexedDB ready, loading data...');
+    await loadSlides();
+    await loadProducts();
+    await loadCollections();
+    await loadCart();
     showSlide(currentSlide);
     autoSlide();
+    
+    console.log('Data loading complete');
 });
 
 // ===== SLIDESHOW FUNCTIONS =====
