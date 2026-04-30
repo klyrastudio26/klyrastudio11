@@ -648,6 +648,7 @@ let allSlides = [];
 
 async function loadSlides() {
     try {
+        console.log('🎬 Admin: Loading slides...');
         const querySnapshot = await db.collection('slideshow').get();
         allSlides = [];
         querySnapshot.forEach((doc) => {
@@ -658,17 +659,25 @@ async function loadSlides() {
         });
         // Sort by order/position
         allSlides.sort((a, b) => (a.position || 0) - (b.position || 0));
+        console.log('✓ Loaded', allSlides.length, 'slides from admin');
     } catch (error) {
-        console.error('Error loading slides:', error);
+        console.error('❌ Error loading slides:', error);
         allSlides = [];
     }
 }
 
 function displaySlides() {
+    console.log('📸 Displaying', allSlides.length, 'slides');
     const grid = document.getElementById('slideshow-grid');
+    
+    if (!grid) {
+        console.error('❌ slideshow-grid element not found');
+        return;
+    }
     
     if (allSlides.length === 0) {
         grid.innerHTML = '<div class="loading">No slides yet. Add your first slide!</div>';
+        console.log('ℹ️  No slides to display');
         return;
     }
     
@@ -688,6 +697,8 @@ function displaySlides() {
             </div>
         </div>
     `).join('');
+    
+    console.log('✓ Displayed', allSlides.length, 'slides');
 }
 
 function showAddSlideModal() {
@@ -760,13 +771,24 @@ document.getElementById('slideshow-form')?.addEventListener('submit', async (e) 
 });
 
 async function deleteSlide(slideId) {
+    console.log('🗑️  Delete slide requested for:', slideId);
+    
     if (confirm('Are you sure you want to delete this slide?')) {
         try {
+            console.log('Deleting slide...');
             await db.collection('slideshow').doc(slideId).delete();
-            alert('Slide deleted successfully!');
+            console.log('✓ Slide deleted from database');
+            
+            alert('✓ Slide deleted successfully!');
             await loadSlides();
             displaySlides();
+            console.log('✓ Slideshow refreshed');
         } catch (error) {
+            console.error('❌ Error deleting slide:', error);
+            alert('❌ Error deleting slide: ' + error.message);
+        }
+    }
+}
             alert('Error deleting slide: ' + error.message);
         }
     }

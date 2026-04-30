@@ -74,75 +74,117 @@ function displayOrderReview() {
 }
 
 function goToStep(step) {
-    console.log('🔄 goToStep called with step:', step);
+    console.log('🔄 goToStep called with step:', step, 'currentStep:', currentStep);
     
     // Validate current step before moving to next
     if (step === 2 && currentStep === 1) {
-        console.log('Moving from step 1 to 2 (shipping)');
-        // Just change the step
+        console.log('✓ Moving from step 1 to 2 (shipping) - no validation needed');
     }
 
     if (step === 3 && currentStep === 2) {
-        console.log('Validating shipping form before moving to payment');
+        console.log('⚠️  Moving from step 2 to 3 - validating shipping form');
         if (!validateShippingForm()) {
-            console.log('❌ Shipping form validation failed');
+            console.error('❌ Shipping form validation failed - NOT moving to step 3');
             return;
         }
+        console.log('✓ Shipping form valid - proceed to payment');
     }
 
     currentStep = step;
-    console.log('Current step is now:', currentStep);
+    console.log('✓ Current step updated to:', currentStep);
 
     // Hide all steps
-    document.querySelectorAll('.checkout-step').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const allSteps = document.querySelectorAll('.checkout-step');
+    console.log('Found', allSteps.length, 'checkout-steps');
+    allSteps.forEach(s => s.classList.remove('active'));
+    
+    const allStepIndicators = document.querySelectorAll('.step');
+    console.log('Found', allStepIndicators.length, 'step indicators');
+    allStepIndicators.forEach(s => s.classList.remove('active'));
 
     // Show current step
     if (step === 1) {
-        console.log('Showing review step');
-        document.getElementById('review-step').classList.add('active');
+        const reviewStep = document.getElementById('review-step');
+        if (reviewStep) {
+            reviewStep.classList.add('active');
+            console.log('✓ Showing review step');
+        } else {
+            console.error('❌ review-step element not found');
+        }
     } else if (step === 2) {
-        console.log('Showing shipping step');
-        document.getElementById('shipping-step').classList.add('active');
+        const shippingStep = document.getElementById('shipping-step');
+        if (shippingStep) {
+            shippingStep.classList.add('active');
+            console.log('✓ Showing shipping step');
+        } else {
+            console.error('❌ shipping-step element not found');
+        }
     } else if (step === 3) {
-        console.log('Showing payment step');
-        document.getElementById('payment-step').classList.add('active');
+        const paymentStep = document.getElementById('payment-step');
+        if (paymentStep) {
+            paymentStep.classList.add('active');
+            console.log('✓ Showing payment step');
+        } else {
+            console.error('❌ payment-step element not found');
+        }
     }
 
+    // Activate step indicator
     const stepElement = document.getElementById('step-' + step);
     if (stepElement) {
         stepElement.classList.add('active');
-        console.log('✓ Step', step, 'activated');
+        console.log('✓ Step indicator', step, 'activated');
     } else {
-        console.error('❌ Step element not found: step-' + step);
+        console.warn('⚠️  Step indicator not found: step-' + step);
     }
+    
+    console.log('✓ Successfully moved to step', step);
 }
 
 function validateShippingForm() {
+    console.log('🔍 Validating shipping form...');
     const requiredFields = ['full-name', 'phone-number', 'email', 'address', 'city', 'state', 'postal-code'];
     
     for (let field of requiredFields) {
         const input = document.getElementById(field);
+        if (!input) {
+            console.error('❌ Field not found:', field);
+            continue;
+        }
+        
+        const label = input.previousElementSibling?.textContent || field;
         if (!input.value.trim()) {
-            alert(`Please fill in the ${input.previousElementSibling.textContent.toLowerCase()}`);
+            console.error('❌ Required field empty:', field);
+            alert(`Please fill in the ${label.toLowerCase()}`);
             return false;
         }
+        console.log('✓ Field filled:', field);
     }
 
     // Validate phone
-    const phone = document.getElementById('phone-number').value;
-    if (!/^\d{10}$/.test(phone.replace(/\D/g, ''))) {
-        alert('Please enter a valid 10-digit phone number');
-        return false;
+    const phone = document.getElementById('phone-number');
+    if (phone) {
+        const phoneValue = phone.value.replace(/\D/g, '');
+        if (!/^\d{10}$/.test(phoneValue)) {
+            console.error('❌ Invalid phone number');
+            alert('Please enter a valid 10-digit phone number');
+            return false;
+        }
+        console.log('✓ Valid phone number');
     }
 
     // Validate email
-    const email = document.getElementById('email').value;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        alert('Please enter a valid email address');
-        return false;
+    const email = document.getElementById('email');
+    if (email) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+            console.error('❌ Invalid email');
+            alert('Please enter a valid email address');
+            return false;
+        }
+        console.log('✓ Valid email');
     }
 
+    console.log('✓ All shipping fields validated!');
     return true;
 }
 
