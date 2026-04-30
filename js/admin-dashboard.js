@@ -124,7 +124,10 @@ function switchTab(tabName) {
 // ===== PRODUCTS MANAGEMENT =====
 async function loadProducts() {
     try {
+        console.log('📦 Admin: Loading products...');
         const querySnapshot = await db.collection('products').get();
+        console.log('✓ Got query snapshot, docs count:', querySnapshot.docs ? querySnapshot.docs.length : 'unknown');
+        
         allProducts = [];
         querySnapshot.forEach((doc) => {
             allProducts.push({
@@ -132,8 +135,9 @@ async function loadProducts() {
                 ...doc.data()
             });
         });
+        console.log('✓ Loaded ' + allProducts.length + ' products from admin');
     } catch (error) {
-        console.error('Error loading products:', error);
+        console.error('❌ Error loading products:', error);
         allProducts = [];
     }
 }
@@ -195,6 +199,8 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
             });
         }
         
+        console.log('📝 Adding product:', name, 'to collection:', collection);
+        
         await db.collection('products').add({
             name,
             collection,
@@ -204,12 +210,15 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
             createdAt: new Date().toISOString()
         });
         
-        alert('Product added successfully!');
+        console.log('✓ Product saved to IndexedDB');
+        alert('✓ Product added successfully!');
         closeProductModal();
         await loadProducts();
         displayProducts();
+        console.log('✓ Product display updated');
     } catch (error) {
-        alert('Error adding product: ' + error.message);
+        console.error('❌ Error adding product:', error);
+        alert('❌ Error adding product: ' + error.message);
     }
 });
 

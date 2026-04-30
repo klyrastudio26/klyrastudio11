@@ -44,11 +44,21 @@ function toggleDebug() {
 
 // Reload all data from localStorage
 async function reloadAllData() {
-    console.log('Manually reloading all data from localStorage');
-    await loadSlides();
-    await loadProducts();
-    await loadCollections();
-    alert('Data refreshed!');
+    console.log('🔄 Manually reloading all data...');
+    try {
+        await loadSlides();
+        console.log('✓ Slides loaded');
+        await loadProducts();
+        console.log('✓ Products loaded:', products.length, 'products');
+        displayProducts(products);
+        console.log('✓ Products displayed');
+        await loadCollections();
+        console.log('✓ Collections loaded');
+        alert('✓ Data refreshed! (' + products.length + ' products)');
+    } catch (error) {
+        console.error('❌ Error reloading data:', error);
+        alert('❌ Error reloading data. Check console.');
+    }
 }
 
 // Initialize on page load
@@ -187,7 +197,10 @@ function updateSlideshowHTML() {
 // ===== PRODUCT FUNCTIONS =====
 async function loadProducts() {
     try {
+        console.log('📦 Loading products from db...');
         const querySnapshot = await db.collection('products').get();
+        console.log('✓ Got query snapshot:', querySnapshot);
+        
         products = [];
         querySnapshot.forEach((doc) => {
             products.push({
@@ -195,11 +208,12 @@ async function loadProducts() {
                 ...doc.data()
             });
         });
-        console.log('Loaded products:', products);
+        
+        console.log('✓ Loaded ' + products.length + ' products:', products);
         displayProducts(products);
     } catch (error) {
-        console.error('Error loading products:', error);
-        document.getElementById('products-grid').innerHTML = '<div class="loading">Error loading products. Please check Firebase configuration.</div>';
+        console.error('❌ Error loading products:', error);
+        document.getElementById('products-grid').innerHTML = '<div class="loading">Error loading products: ' + error.message + '</div>';
     }
 }
 
