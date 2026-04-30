@@ -357,3 +357,9 @@ function showSignupSuccess(message) {
     successDiv.textContent = message;
     successDiv.classList.add('show');
 }
+
+// ===== EXPOSE FUNCTIONS TO WINDOW (GLOBAL SCOPE) =====
+window.goToStep = goToStep;
+window.validateShippingForm = validateShippingForm;
+window.completeOrder = completeOrder;
+window.proceedToCheckout = proceedToCheckout;

@@ -779,3 +779,20 @@ async function editSlide(slideId) {
 function toggleSidebar() {
     document.querySelector('.sidebar').classList.toggle('collapsed');
 }
+
+// ===== EXPOSE FUNCTIONS TO WINDOW (GLOBAL SCOPE) =====
+window.switchTab = switchTab;
+window.openProductModal = openProductModal;
+window.closeProductModal = closeProductModal;
+window.openCollectionModal = openCollectionModal;
+window.closeCollectionModal = closeCollectionModal;
+window.openSlideModal = openSlideModal;
+window.closeSlideModal = closeSlideModal;
+window.deleteProduct = deleteProduct;
+window.deleteCollection = deleteCollection;
+window.deleteSlide = deleteSlide;
+window.editProduct = editProduct;
+window.editCollection = editCollection;
+window.editSlide = editSlide;
+window.viewUserDetails = viewUserDetails;
+window.toggleSidebar = toggleSidebar;

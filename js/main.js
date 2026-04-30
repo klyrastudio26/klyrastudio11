@@ -4,6 +4,7 @@ let cart = [];
 let products = [];
 let collections = [];
 let slides = [];
+let autoSlideInterval = null; // Prevent multiple intervals
 
 // Wait for db to be defined globally
 async function waitForDB() {
@@ -123,7 +124,11 @@ function showSlide(n) {
 }
 
 function autoSlide() {
-    setInterval(() => {
+    // Clear any existing interval
+    if (autoSlideInterval) clearInterval(autoSlideInterval);
+    
+    // Set new interval
+    autoSlideInterval = setInterval(() => {
         showSlide(++currentSlideIndex);
         if (currentSlideIndex > document.getElementsByClassName('slide').length) {
             currentSlideIndex = 1;
@@ -134,6 +139,7 @@ function autoSlide() {
 // ===== LOAD SLIDESHOW FROM FIRESTORE =====
 async function loadSlides() {
     try {
+        console.log('🎬 Loading slides...');
         const querySnapshot = await db.collection('slideshow').get();
         slides = [];
         querySnapshot.forEach((doc) => {
@@ -143,17 +149,21 @@ async function loadSlides() {
             });
         });
         
-        console.log('Loaded slides:', slides);
+        console.log('✓ Loaded ' + slides.length + ' slides:', slides);
         
         // Sort by position
         slides.sort((a, b) => (a.position || 0) - (b.position || 0));
         
         // If slides found, update the slideshow with them
         if (slides.length > 0) {
+            console.log('📸 Updating slideshow HTML...');
             updateSlideshowHTML();
+            console.log('✓ Slideshow updated');
+        } else {
+            console.log('ℹ️  No slides in database, using default slides');
         }
     } catch (error) {
-        console.error('Error loading slides:', error);
+        console.error('❌ Error loading slides:', error);
         // Keep default slides if error
     }
 }
