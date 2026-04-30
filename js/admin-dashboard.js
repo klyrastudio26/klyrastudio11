@@ -789,10 +789,6 @@ async function deleteSlide(slideId) {
         }
     }
 }
-            alert('Error deleting slide: ' + error.message);
-        }
-    }
-}
 
 async function editSlide(slideId) {
     const slide = allSlides.find(s => s.id === slideId);
