@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check IndexedDB Data</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        button { padding: 10px 20px; margin: 5px; background: #333; color: #0f0; border: 1px solid #0f0; cursor: pointer; }
+        pre { background: #111; padding: 10px; overflow: auto; max-height: 500px; }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+    </style>
+</head>
+<body>
+    <h1>IndexedDB Data Inspector</h1>
+    <button onclick="checkIndexedDB()">📊 Check IndexedDB</button>
+    <button onclick="checkLocalStorage()">💾 Check localStorage</button>
+    <button onclick="clearAllData()">🗑️ Clear All Data</button>
+    <button onclick="addTestProduct()">➕ Add Test Product</button>
+    <hr>
+    <pre id="output"></pre>
+
+    <script src="js/db.js"></script>
+    <script>
+        async function log(msg, type = 'log') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'color: red' : type === 'success' ? 'color: green' : 'color: white';
+            output.innerHTML += `<span style="${color}">[${timestamp}] ${msg}</span>\n`;
+            console.log(msg);
+        }
+
+        async function checkIndexedDB() {
+            document.getElementById('output').innerHTML = '';
+            
+            // Wait for db to load
+            let attempts = 0;
+            while (typeof db === 'undefined' && attempts < 100) {
+                await new Promise(r => setTimeout(r, 50));
+                attempts++;
+            }
+            
+            if (typeof db === 'undefined') {
+                await log('❌ DB not loaded!', 'error');
+                return;
+            }
+            
+            await db.initPromise;
+            await log('✓ DB initialized', 'success');
+            
+            const collections = ['products', 'collections', 'slideshow', 'users', 'orders'];
+            
+            for (const collName of collections) {
+                try {
+                    const result = await db.collection(collName).get();
+                    const count = result.docs ? result.docs.length : 0;
+                    await log(`📦 ${collName}: ${count} items`, count > 0 ? 'success' : 'log');
+                    
+                    if (count > 0) {
+                        result.docs.forEach((doc, i) => {
+                            const data = doc.data();
+                            await log(`  [${i}] ID: ${doc.id}`, 'log');
+                            await log(`      Name: ${data.name || data.title || 'N/A'}`, 'log');
+                        });
+                    }
+                } catch (e) {
+                    await log(`❌ ${collName}: ${e.message}`, 'error');
+                }
+            }
+        }
+
+        async function checkLocalStorage() {
+            document.getElementById('output').innerHTML = '';
+            await log('📂 localStorage Contents:', 'log');
+            
+            const keys = ['products', 'collections', 'slideshow', 'users', 'orders'];
+            for (const key of keys) {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    const items = JSON.parse(data);
+                    await log(`${key}: ${items.length} items`, items.length > 0 ? 'success' : 'log');
+                    items.forEach((item, i) => {
+                        await log(`  [${i}] ${item.name || item.title || 'Item ' + i}`, 'log');
+                    });
+                } else {
+                    await log(`${key}: empty`, 'log');
+                }
+            }
+        }
+
+        async function addTestProduct() {
+            document.getElementById('output').innerHTML = '';
+            
+            // Wait for db
+            let attempts = 0;
+            while (typeof db === 'undefined' && attempts < 100) {
+                await new Promise(r => setTimeout(r, 50));
+                attempts++;
+            }
+            
+            await db.initPromise;
+            
+            try {
+                const testProduct = {
+                    name: 'Test Product ' + Date.now(),
+                    collection: 'Test Collection',
+                    price: 999,
+                    description: 'This is a test product',
+                    image: 'https://via.placeholder.com/280x250?text=Test',
+                    createdAt: new Date().toISOString()
+                };
+                
+                await log('Adding test product...', 'log');
+                await log('Data: ' + JSON.stringify(testProduct), 'log');
+                
+                await db.collection('products').add(testProduct);
+                await log('✓ Product added!', 'success');
+                
+                // Check if it was saved
+                setTimeout(() => {
+                    checkIndexedDB();
+                }, 500);
+            } catch (e) {
+                await log('❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function clearAllData() {
+            if (confirm('Clear all data?')) {
+                localStorage.clear();
+                await log('✓ localStorage cleared', 'success');
+                
+                // Reload page to reinit db
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                checkIndexedDB();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

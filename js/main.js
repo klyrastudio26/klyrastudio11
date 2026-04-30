@@ -46,6 +46,9 @@ function toggleDebug() {
 async function reloadAllData() {
     console.log('🔄 Manually reloading all data...');
     try {
+        // Make sure db is ready
+        await waitForDB();
+        
         await loadSlides();
         console.log('✓ Slides loaded');
         await loadProducts();
@@ -60,6 +63,19 @@ async function reloadAllData() {
         alert('❌ Error reloading data. Check console.');
     }
 }
+
+// Make sure it's globally accessible
+window.reloadAllData = reloadAllData;
+window.toggleDebug = toggleDebug;
+window.toggleCart = toggleCart;
+window.filterProducts = filterProducts;
+window.addToCart = addToCart;
+window.viewProduct = viewProduct;
+window.updateQuantity = updateQuantity;
+window.removeFromCart = removeFromCart;
+window.proceedToCheckout = proceedToCheckout;
+window.changeSlide = changeSlide;
+window.currentSlide = currentSlide;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
