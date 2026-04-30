@@ -27,39 +27,12 @@
         </div>
     </nav>
 
-    <!-- Hero Section with Slideshow -->
+    <!-- Hero Section -->
     <section id="home" class="hero">
-        <div class="slideshow-container">
-            <div class="slide fade">
-                <img src="https://via.placeholder.com/1200x600/1a1a1a/d4af37?text=Klyra+Studio" alt="Luxury Jewelry 1">
-                <div class="slide-text">
-                    <h2>Elegance Redefined</h2>
-                    <p>Discover our exclusive jewelry collection</p>
-                </div>
-            </div>
-            <div class="slide fade">
-                <img src="https://via.placeholder.com/1200x600/2d2d2d/e8c547?text=Premium+Collection" alt="Luxury Jewelry 2">
-                <div class="slide-text">
-                    <h2>Premium Craftsmanship</h2>
-                    <p>Handcrafted with finest materials</p>
-                </div>
-            </div>
-            <div class="slide fade">
-                <img src="https://via.placeholder.com/1200x600/1a1a1a/d4af37?text=Luxury+Pieces" alt="Luxury Jewelry 3">
-                <div class="slide-text">
-                    <h2>Luxury Defined</h2>
-                    <p>Timeless pieces for your special moments</p>
-                </div>
-            </div>
-
-            <a class="prev" onclick="changeSlide(-1)">&#10094;</a>
-            <a class="next" onclick="changeSlide(1)">&#10095;</a>
-
-            <div class="slide-dots">
-                <span class="dot" onclick="currentSlide(1)"></span>
-                <span class="dot" onclick="currentSlide(2)"></span>
-                <span class="dot" onclick="currentSlide(3)"></span>
-            </div>
+        <div class="hero-content">
+            <h1>Klyra Studio</h1>
+            <p>Discover our exclusive jewelry collection - Elegance Redefined</p>
+            <button class="btn-primary" onclick="document.getElementById('collections').scrollIntoView({behavior: 'smooth'})">Shop Now</button>
         </div>
     </section>
 
