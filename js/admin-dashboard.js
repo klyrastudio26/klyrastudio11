@@ -710,6 +710,14 @@ document.getElementById('slideshow-form')?.addEventListener('submit', async (e) 
     const imageFile = document.getElementById('slide-image').files[0];
     
     try {
+        // Wait for db to be ready
+        const dbReady = await waitForDB();
+        if (!dbReady) {
+            alert('❌ Database not ready. Please try again.');
+            return;
+        }
+        
+        console.log('📸 Adding slide:', title);
         let imageData = 'https://via.placeholder.com/1200x600';
         
         // Convert image file to base64
@@ -725,25 +733,29 @@ document.getElementById('slideshow-form')?.addEventListener('submit', async (e) 
             title,
             description,
             image: imageData,
-            position: allSlides.length + 1,
+            position: (allSlides.length || 0) + 1,
             createdAt: new Date().toISOString()
         };
         
         if (document.getElementById('slideshow-form').dataset.slideId) {
             const slideId = document.getElementById('slideshow-form').dataset.slideId;
+            console.log('✏️  Updating slide:', slideId);
             await db.collection('slideshow').doc(slideId).update(formData);
-            alert('Slide updated successfully!');
+            alert('✓ Slide updated successfully!');
             delete document.getElementById('slideshow-form').dataset.slideId;
         } else {
+            console.log('➕ Adding new slide');
             await db.collection('slideshow').add(formData);
-            alert('Slide added successfully!');
+            alert('✓ Slide added successfully!');
         }
         
         closeSlideModal();
         await loadSlides();
         displaySlides();
+        console.log('✓ Slideshow updated');
     } catch (error) {
-        alert('Error: ' + error.message);
+        console.error('❌ Error adding slide:', error);
+        alert('❌ Error: ' + error.message);
     }
 });
 

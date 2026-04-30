@@ -74,19 +74,24 @@ function displayOrderReview() {
 }
 
 function goToStep(step) {
+    console.log('🔄 goToStep called with step:', step);
+    
     // Validate current step before moving to next
     if (step === 2 && currentStep === 1) {
-        goToStep(2);
-        return;
+        console.log('Moving from step 1 to 2 (shipping)');
+        // Just change the step
     }
 
     if (step === 3 && currentStep === 2) {
+        console.log('Validating shipping form before moving to payment');
         if (!validateShippingForm()) {
+            console.log('❌ Shipping form validation failed');
             return;
         }
     }
 
     currentStep = step;
+    console.log('Current step is now:', currentStep);
 
     // Hide all steps
     document.querySelectorAll('.checkout-step').forEach(s => s.classList.remove('active'));
@@ -94,14 +99,23 @@ function goToStep(step) {
 
     // Show current step
     if (step === 1) {
+        console.log('Showing review step');
         document.getElementById('review-step').classList.add('active');
     } else if (step === 2) {
+        console.log('Showing shipping step');
         document.getElementById('shipping-step').classList.add('active');
     } else if (step === 3) {
+        console.log('Showing payment step');
         document.getElementById('payment-step').classList.add('active');
     }
 
-    document.getElementById('step-' + step).classList.add('active');
+    const stepElement = document.getElementById('step-' + step);
+    if (stepElement) {
+        stepElement.classList.add('active');
+        console.log('✓ Step', step, 'activated');
+    } else {
+        console.error('❌ Step element not found: step-' + step);
+    }
 }
 
 function validateShippingForm() {

@@ -56,11 +56,12 @@
                     await log(`📦 ${collName}: ${count} items`, count > 0 ? 'success' : 'log');
                     
                     if (count > 0) {
-                        result.docs.forEach((doc, i) => {
+                        for (let i = 0; i < result.docs.length; i++) {
+                            const doc = result.docs[i];
                             const data = doc.data();
                             await log(`  [${i}] ID: ${doc.id}`, 'log');
                             await log(`      Name: ${data.name || data.title || 'N/A'}`, 'log');
-                        });
+                        }
                     }
                 } catch (e) {
                     await log(`❌ ${collName}: ${e.message}`, 'error');
@@ -78,9 +79,10 @@
                 if (data) {
                     const items = JSON.parse(data);
                     await log(`${key}: ${items.length} items`, items.length > 0 ? 'success' : 'log');
-                    items.forEach((item, i) => {
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
                         await log(`  [${i}] ${item.name || item.title || 'Item ' + i}`, 'log');
-                    });
+                    }
                 } else {
                     await log(`${key}: empty`, 'log');
                 }
