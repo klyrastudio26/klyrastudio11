@@ -58,7 +58,6 @@ async function loadDashboardData() {
         await Promise.all([
             loadProducts(),
             loadCollections(),
-            loadSlides(),
             loadOrders(),
             loadUsers()
         ]);
@@ -384,13 +383,19 @@ function closeCollectionModal() {
 // ===== ORDERS MANAGEMENT =====
 async function loadOrders() {
     try {
-        const querySnapshot = await db.collection('orders').orderBy('createdAt', 'desc').get();
+        const querySnapshot = await db.collection('orders').get();
         allOrders = [];
         querySnapshot.forEach((doc) => {
             allOrders.push({
                 id: doc.id,
                 ...doc.data()
             });
+        });
+        // Sort by createdAt in descending order
+        allOrders.sort((a, b) => {
+            const dateA = new Date(a.createdAt || 0);
+            const dateB = new Date(b.createdAt || 0);
+            return dateB - dateA;
         });
     } catch (error) {
         console.error('Error loading orders:', error);
@@ -643,168 +648,6 @@ function logout() {
     }
 }
 
-// ===== SLIDESHOW MANAGEMENT =====
-let allSlides = [];
-
-async function loadSlides() {
-    try {
-        console.log('🎬 Admin: Loading slides...');
-        const querySnapshot = await db.collection('slideshow').get();
-        allSlides = [];
-        querySnapshot.forEach((doc) => {
-            allSlides.push({
-                id: doc.id,
-                ...doc.data()
-            });
-        });
-        // Sort by order/position
-        allSlides.sort((a, b) => (a.position || 0) - (b.position || 0));
-        console.log('✓ Loaded', allSlides.length, 'slides from admin');
-    } catch (error) {
-        console.error('❌ Error loading slides:', error);
-        allSlides = [];
-    }
-}
-
-function displaySlides() {
-    console.log('📸 Displaying', allSlides.length, 'slides');
-    const grid = document.getElementById('slideshow-grid');
-    
-    if (!grid) {
-        console.error('❌ slideshow-grid element not found');
-        return;
-    }
-    
-    if (allSlides.length === 0) {
-        grid.innerHTML = '<div class="loading">No slides yet. Add your first slide!</div>';
-        console.log('ℹ️  No slides to display');
-        return;
-    }
-    
-    grid.innerHTML = allSlides.map((slide, index) => `
-        <div class="slide-card">
-            <div class="slide-image">
-                <img src="${slide.image || 'https://via.placeholder.com/300x200'}" alt="${slide.title}">
-            </div>
-            <div class="slide-info">
-                <h3>${slide.title}</h3>
-                <p>${slide.description || ''}</p>
-                <div class="slide-position">Position: ${index + 1}</div>
-                <div class="slide-actions">
-                    <button class="btn-edit" onclick="editSlide('${slide.id}')">Edit</button>
-                    <button class="btn-delete" onclick="deleteSlide('${slide.id}')">Delete</button>
-                </div>
-            </div>
-        </div>
-    `).join('');
-    
-    console.log('✓ Displayed', allSlides.length, 'slides');
-}
-
-function showAddSlideModal() {
-    document.getElementById('slideshow-form').reset();
-    document.querySelector('#slideshow-modal h2').textContent = 'Add Slideshow Slide';
-    delete document.getElementById('slideshow-form').dataset.slideId;
-    document.getElementById('slideshow-modal').classList.add('show');
-}
-
-function closeSlideModal() {
-    document.getElementById('slideshow-modal').classList.remove('show');
-    delete document.getElementById('slideshow-form').dataset.slideId;
-}
-
-document.getElementById('slideshow-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const title = document.getElementById('slide-title').value;
-    const description = document.getElementById('slide-description').value;
-    const imageFile = document.getElementById('slide-image').files[0];
-    
-    try {
-        // Wait for db to be ready
-        const dbReady = await waitForDB();
-        if (!dbReady) {
-            alert('❌ Database not ready. Please try again.');
-            return;
-        }
-        
-        console.log('📸 Adding slide:', title);
-        let imageData = 'https://via.placeholder.com/1200x600';
-        
-        // Convert image file to base64
-        if (imageFile) {
-            imageData = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.readAsDataURL(imageFile);
-            });
-        }
-        
-        const formData = {
-            title,
-            description,
-            image: imageData,
-            position: (allSlides.length || 0) + 1,
-            createdAt: new Date().toISOString()
-        };
-        
-        if (document.getElementById('slideshow-form').dataset.slideId) {
-            const slideId = document.getElementById('slideshow-form').dataset.slideId;
-            console.log('✏️  Updating slide:', slideId);
-            await db.collection('slideshow').doc(slideId).update(formData);
-            alert('✓ Slide updated successfully!');
-            delete document.getElementById('slideshow-form').dataset.slideId;
-        } else {
-            console.log('➕ Adding new slide');
-            await db.collection('slideshow').add(formData);
-            alert('✓ Slide added successfully!');
-        }
-        
-        closeSlideModal();
-        await loadSlides();
-        displaySlides();
-        console.log('✓ Slideshow updated');
-    } catch (error) {
-        console.error('❌ Error adding slide:', error);
-        alert('❌ Error: ' + error.message);
-    }
-});
-
-async function deleteSlide(slideId) {
-    console.log('🗑️  Delete slide requested for:', slideId);
-    
-    if (confirm('Are you sure you want to delete this slide?')) {
-        try {
-            console.log('Deleting slide...');
-            await db.collection('slideshow').doc(slideId).delete();
-            console.log('✓ Slide deleted from database');
-            
-            alert('✓ Slide deleted successfully!');
-            await loadSlides();
-            displaySlides();
-            console.log('✓ Slideshow refreshed');
-        } catch (error) {
-            console.error('❌ Error deleting slide:', error);
-            alert('❌ Error deleting slide: ' + error.message);
-        }
-    }
-}
-
-async function editSlide(slideId) {
-    const slide = allSlides.find(s => s.id === slideId);
-    if (!slide) return;
-    
-    document.getElementById('slide-title').value = slide.title;
-    document.getElementById('slide-description').value = slide.description || '';
-    document.getElementById('slide-image-url').value = slide.image || '';
-    
-    // Store current slide ID for update
-    document.getElementById('slideshow-form').dataset.slideId = slideId;
-    document.querySelector('#slideshow-modal h2').textContent = 'Edit Slide';
-    
-    document.getElementById('slideshow-modal').classList.add('show');
-}
-
 // ===== SIDEBAR TOGGLE =====
 function toggleSidebar() {
     document.querySelector('.sidebar').classList.toggle('collapsed');
@@ -820,23 +663,16 @@ function closePaymentModal() {
 
 // ===== EXPOSE FUNCTIONS TO WINDOW (GLOBAL SCOPE) =====
 window.switchTab = switchTab;
-window.openProductModal = openProductModal;
 window.closeProductModal = closeProductModal;
-window.openCollectionModal = openCollectionModal;
 window.closeCollectionModal = closeCollectionModal;
-window.openSlideModal = openSlideModal;
-window.closeSlideModal = closeSlideModal;
 window.deleteProduct = deleteProduct;
 window.deleteCollection = deleteCollection;
-window.deleteSlide = deleteSlide;
 window.editProduct = editProduct;
 window.editCollection = editCollection;
-window.editSlide = editSlide;
 window.viewUserDetails = viewUserDetails;
 window.toggleSidebar = toggleSidebar;
 window.showAddProductModal = showAddProductModal;
 window.showAddCollectionModal = showAddCollectionModal;
-window.showAddSlideModal = showAddSlideModal;
 window.verifyOrderPayment = verifyOrderPayment;
 window.markOrderReceived = markOrderReceived;
 window.verifyPayment = verifyPayment;

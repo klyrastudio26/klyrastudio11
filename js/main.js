@@ -1,10 +1,7 @@
 // Global Variables
-let currentSlideIndex = 1;
 let cart = [];
 let products = [];
 let collections = [];
-let slides = [];
-let autoSlideInterval = null; // Prevent multiple intervals
 
 // Wait for db to be defined globally
 async function waitForDB() {
@@ -33,8 +30,6 @@ function toggleDebug() {
             <div><strong>IndexedDB Status</strong></div>
             <div>Products in memory: ${products.length} items</div>
             <div>Collections in memory: ${collections.length} items</div>
-            <div>Slides in memory: ${slides.length} items</div>
-            <div>Current slide: ${currentSlideIndex}</div>
             <div>Cart items: ${cart.length} items</div>
             <div style="margin-top: 10px; font-size: 10px; color: #999;">IndexedDB has unlimited storage</div>
         `;
@@ -51,8 +46,6 @@ async function reloadAllData() {
         // Make sure db is ready
         await waitForDB();
         
-        await loadSlides();
-        console.log('✓ Slides loaded');
         await loadProducts();
         console.log('✓ Products loaded:', products.length, 'products');
         displayProducts(products);
@@ -78,12 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         await waitForDB();
         
         console.log('Loading data...');
-        await loadSlides();
         await loadProducts();
         await loadCollections();
         await loadCart();
-        showSlide(currentSlideIndex);
-        autoSlide();
         
         console.log('✓ Initialization complete');
     } catch (error) {
@@ -92,126 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// ===== SLIDESHOW FUNCTIONS =====
-function changeSlide(n) {
-    showSlide(currentSlideIndex += n);
-}
-
-function currentSlide(n) {
-    showSlide(currentSlideIndex = n);
-}
-
-function showSlide(n) {
-    const slides = document.getElementsByClassName('slide');
-    const dots = document.getElementsByClassName('dot');
-
-    if (n > slides.length) {
-        currentSlideIndex = 1;
-    }
-    if (n < 1) {
-        currentSlideIndex = slides.length;
-    }
-
-    for (let i = 0; i < slides.length; i++) {
-        slides[i].classList.remove('fade');
-    }
-    for (let i = 0; i < dots.length; i++) {
-        dots[i].classList.remove('active');
-    }
-
-    slides[currentSlideIndex - 1].classList.add('fade');
-    dots[currentSlideIndex - 1].classList.add('active');
-}
-
-function autoSlide() {
-    // Clear any existing interval
-    if (autoSlideInterval) clearInterval(autoSlideInterval);
-    
-    // Set new interval
-    autoSlideInterval = setInterval(() => {
-        showSlide(++currentSlideIndex);
-        if (currentSlideIndex > document.getElementsByClassName('slide').length) {
-            currentSlideIndex = 1;
-        }
-    }, 5000);
-}
-
-// ===== LOAD SLIDESHOW FROM FIRESTORE =====
-async function loadSlides() {
-    try {
-        console.log('🎬 Loading slides...');
-        const querySnapshot = await db.collection('slideshow').get();
-        slides = [];
-        querySnapshot.forEach((doc) => {
-            slides.push({
-                id: doc.id,
-                ...doc.data()
-            });
-        });
-        
-        console.log('✓ Loaded ' + slides.length + ' slides:', slides);
-        
-        // Sort by position
-        slides.sort((a, b) => (a.position || 0) - (b.position || 0));
-        
-        // If slides found, update the slideshow with them
-        if (slides.length > 0) {
-            console.log('📸 Updating slideshow HTML...');
-            updateSlideshowHTML();
-            console.log('✓ Slideshow updated');
-        } else {
-            console.log('ℹ️  No slides in database, using default slides');
-        }
-    } catch (error) {
-        console.error('❌ Error loading slides:', error);
-        // Keep default slides if error
-    }
-}
-
-function updateSlideshowHTML() {
-    const slideshowContainer = document.querySelector('.slideshow-container');
-    if (!slideshowContainer) return;
-    
-    // Create new slides
-    const slidesHTML = slides.map((slide, index) => `
-        <div class="slide fade">
-            <img src="${slide.image || 'https://via.placeholder.com/1200x600'}" alt="${slide.title}">
-            <div class="slide-text">
-                <h2>${slide.title}</h2>
-                <p>${slide.description || ''}</p>
-            </div>
-        </div>
-    `).join('');
-    
-    // Create new dots
-    const dotsHTML = slides.map((slide, index) => 
-        `<span class="dot" onclick="currentSlide(${index + 1})"></span>`
-    ).join('');
-    
-    // Find and replace old slides
-    const oldSlides = slideshowContainer.querySelectorAll('.slide');
-    oldSlides.forEach(slide => slide.remove());
-    
-    // Find the first position to insert new slides (before the prev/next buttons)
-    const prevButton = slideshowContainer.querySelector('.prev');
-    const dotsContainer = slideshowContainer.querySelector('.slide-dots');
-    
-    // Insert new slides HTML
-    if (prevButton) {
-        prevButton.insertAdjacentHTML('beforebegin', slidesHTML);
-    }
-    
-    // Update dots
-    if (dotsContainer) {
-        dotsContainer.innerHTML = dotsHTML;
-    }
-    
-    // Reset slide counter
-    currentSlideIndex = 1;
-    showSlide(currentSlideIndex);
-}
-
-// ===== PRODUCT FUNCTIONS =====
+// ===== PRODUCT FUNCTIONS ======
 async function loadProducts() {
     try {
         console.log('📦 Loading products from db...');
