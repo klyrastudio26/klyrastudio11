@@ -814,6 +814,14 @@ function toggleSidebar() {
     document.querySelector('.sidebar').classList.toggle('collapsed');
 }
 
+// ===== CLOSE PAYMENT MODAL =====
+function closePaymentModal() {
+    const modal = document.getElementById('payment-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
 // ===== EXPOSE FUNCTIONS TO WINDOW (GLOBAL SCOPE) =====
 window.switchTab = switchTab;
 window.openProductModal = openProductModal;
@@ -830,3 +838,11 @@ window.editCollection = editCollection;
 window.editSlide = editSlide;
 window.viewUserDetails = viewUserDetails;
 window.toggleSidebar = toggleSidebar;
+window.showAddProductModal = showAddProductModal;
+window.showAddCollectionModal = showAddCollectionModal;
+window.showAddSlideModal = showAddSlideModal;
+window.verifyOrderPayment = verifyOrderPayment;
+window.markOrderReceived = markOrderReceived;
+window.verifyPayment = verifyPayment;
+window.exportOrdersToSheets = exportOrdersToSheets;
+window.logout = logout;
