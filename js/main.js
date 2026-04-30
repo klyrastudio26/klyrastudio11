@@ -1,5 +1,5 @@
 // Global Variables
-let currentSlide = 1;
+let currentSlideIndex = 1;
 let cart = [];
 let products = [];
 let collections = [];
@@ -33,6 +33,7 @@ function toggleDebug() {
             <div>Products in memory: ${products.length} items</div>
             <div>Collections in memory: ${collections.length} items</div>
             <div>Slides in memory: ${slides.length} items</div>
+            <div>Current slide: ${currentSlideIndex}</div>
             <div>Cart items: ${cart.length} items</div>
             <div style="margin-top: 10px; font-size: 10px; color: #999;">IndexedDB has unlimited storage</div>
         `;
@@ -75,7 +76,7 @@ window.updateQuantity = updateQuantity;
 window.removeFromCart = removeFromCart;
 window.proceedToCheckout = proceedToCheckout;
 window.changeSlide = changeSlide;
-window.currentSlide = currentSlide;
+window.currentSlide = currentSlide; // Function
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
@@ -90,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadProducts();
         await loadCollections();
         await loadCart();
-        showSlide(currentSlide);
+        showSlide(currentSlideIndex);
         autoSlide();
         
         console.log('✓ Initialization complete');
@@ -102,11 +103,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ===== SLIDESHOW FUNCTIONS =====
 function changeSlide(n) {
-    showSlide(currentSlide += n);
+    showSlide(currentSlideIndex += n);
 }
 
 function currentSlide(n) {
-    showSlide(currentSlide = n);
+    showSlide(currentSlideIndex = n);
 }
 
 function showSlide(n) {
@@ -114,10 +115,10 @@ function showSlide(n) {
     const dots = document.getElementsByClassName('dot');
 
     if (n > slides.length) {
-        currentSlide = 1;
+        currentSlideIndex = 1;
     }
     if (n < 1) {
-        currentSlide = slides.length;
+        currentSlideIndex = slides.length;
     }
 
     for (let i = 0; i < slides.length; i++) {
@@ -127,15 +128,15 @@ function showSlide(n) {
         dots[i].classList.remove('active');
     }
 
-    slides[currentSlide - 1].classList.add('fade');
-    dots[currentSlide - 1].classList.add('active');
+    slides[currentSlideIndex - 1].classList.add('fade');
+    dots[currentSlideIndex - 1].classList.add('active');
 }
 
 function autoSlide() {
     setInterval(() => {
-        showSlide(++currentSlide);
-        if (currentSlide > document.getElementsByClassName('slide').length) {
-            currentSlide = 1;
+        showSlide(++currentSlideIndex);
+        if (currentSlideIndex > document.getElementsByClassName('slide').length) {
+            currentSlideIndex = 1;
         }
     }, 5000);
 }
@@ -206,8 +207,8 @@ function updateSlideshowHTML() {
     }
     
     // Reset slide counter
-    currentSlide = 1;
-    showSlide(currentSlide);
+    currentSlideIndex = 1;
+    showSlide(currentSlideIndex);
 }
 
 // ===== PRODUCT FUNCTIONS =====
