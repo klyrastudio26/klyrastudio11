@@ -67,16 +67,6 @@ async function reloadAllData() {
 
 // Make sure it's globally accessible
 window.reloadAllData = reloadAllData;
-window.toggleDebug = toggleDebug;
-window.toggleCart = toggleCart;
-window.filterProducts = filterProducts;
-window.addToCart = addToCart;
-window.viewProduct = viewProduct;
-window.updateQuantity = updateQuantity;
-window.removeFromCart = removeFromCart;
-window.proceedToCheckout = proceedToCheckout;
-window.changeSlide = changeSlide;
-window.currentSlide = currentSlide; // Function
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
@@ -498,3 +488,17 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ===== EXPOSE FUNCTIONS TO WINDOW (GLOBAL SCOPE) =====
+// These must be after function declarations to avoid hoisting issues
+window.toggleDebug = toggleDebug;
+window.toggleCart = toggleCart;
+window.filterProducts = filterProducts;
+window.addToCart = addToCart;
+window.viewProduct = viewProduct;
+window.updateQuantity = updateQuantity;
+window.removeFromCart = removeFromCart;
+window.proceedToCheckout = proceedToCheckout;
+window.changeSlide = changeSlide;
+window.currentSlide = currentSlide; // Function (not the variable)
+window.reloadAllData = reloadAllData;
