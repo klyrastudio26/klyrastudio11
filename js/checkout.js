@@ -30,6 +30,7 @@ async function waitForDB() {
 document.addEventListener('DOMContentLoaded', () => {
     loadCheckoutData();
     setupPaymentScreenshotUpload();
+    generateUPIQRCode();
 });
 
 function loadCheckoutData() {
@@ -186,6 +187,39 @@ function validateShippingForm() {
 
     console.log('✓ All shipping fields validated!');
     return true;
+}
+
+// Generate UPI QR Code
+function generateUPIQRCode() {
+    try {
+        const qrContainer = document.getElementById('upi-qr-code');
+        if (!qrContainer) {
+            console.warn('QR code container not found');
+            return;
+        }
+        
+        // Clear previous QR code
+        qrContainer.innerHTML = '';
+        
+        // Create UPI string format: upi://pay?pa=UPI_ID
+        const upiString = `upi://pay?pa=${PAYMENT_UPI}`;
+        
+        console.log('📱 Generating UPI QR code for:', PAYMENT_UPI);
+        
+        // Generate QR code
+        new QRCode(qrContainer, {
+            text: upiString,
+            width: 200,
+            height: 200,
+            colorDark: '#1a1a1a',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        console.log('✓ UPI QR code generated successfully');
+    } catch (error) {
+        console.error('❌ Error generating QR code:', error);
+    }
 }
 
 function setupPaymentScreenshotUpload() {

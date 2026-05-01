@@ -420,46 +420,117 @@ function displayOrders() {
             <td><span class="status-badge status-${(order.status || 'pending').toLowerCase()}">${order.status || 'Pending'}</span></td>
             <td><span class="status-badge status-${(order.paymentStatus || 'pending').toLowerCase()}">${order.paymentStatus || 'Pending'}</span></td>
             <td>
-                <button class="btn-edit" onclick="verifyOrderPayment('${order.id}')" style="padding: 5px 10px; margin-right: 5px; font-size: 12px;">Verify</button>
-                <button class="btn-edit" onclick="markOrderReceived('${order.id}')" style="padding: 5px 10px; font-size: 12px; background-color: #28a745; margin-right: 5px;">Received</button>
-                <button class="btn-delete" onclick="deleteOrder('${order.id}')" style="padding: 5px 10px; font-size: 12px; background-color: #dc3545;">Delete</button>
+                <button class="btn-edit" onclick="verifyOrderPayment('${order.id}')" style="padding: 5px 8px; margin-right: 3px; font-size: 11px;">💳 Verify</button>
+                <button class="btn-edit" onclick="markOrderShipped('${order.id}')" style="padding: 5px 8px; margin-right: 3px; font-size: 11px; background-color: #17a2b8;">🚚 Shipped</button>
+                <button class="btn-edit" onclick="markOrderDelivered('${order.id}')" style="padding: 5px 8px; margin-right: 3px; font-size: 11px; background-color: #28a745;">📦 Delivered</button>
+                <button class="btn-delete" onclick="deleteOrder('${order.id}')" style="padding: 5px 8px; font-size: 11px; background-color: #dc3545;">🗑️ Delete</button>
             </td>
         </tr>
     `).join('');
 }
 
-function verifyOrderPayment(orderId) {
+async function verifyOrderPayment(orderId) {
     const order = allOrders.find(o => o.id === orderId);
     if (!order) return;
     
     if (confirm(`Verify payment for ${order.customerName}?\n\nAmount: ₹${order.total}`)) {
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        const index = orders.findIndex(o => o.id === orderId);
-        if (index >= 0) {
-            orders[index].paymentStatus = 'verified';
-            orders[index].verifiedAt = new Date().toISOString();
-            localStorage.setItem('orders', JSON.stringify(orders));
+        try {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const index = orders.findIndex(o => o.id === orderId);
+            if (index >= 0) {
+                orders[index].paymentStatus = 'verified';
+                orders[index].verifiedAt = new Date().toISOString();
+                localStorage.setItem('orders', JSON.stringify(orders));
+            }
+            
+            // Update in IndexedDB
+            await db.collection('orders').doc(orderId).update({
+                paymentStatus: 'verified',
+                verifiedAt: new Date().toISOString(),
+                status: 'confirmed'
+            });
+            
             allOrders[index].paymentStatus = 'verified';
+            allOrders[index].status = 'confirmed';
             displayOrders();
-            alert('✅ Payment verified successfully!');
+            alert('✅ Payment verified! Order status changed to Confirmed.');
+        } catch (error) {
+            console.error('Error verifying payment:', error);
+            alert('❌ Error: ' + error.message);
         }
     }
 }
 
-function markOrderReceived(orderId) {
+async function markOrderShipped(orderId) {
     const order = allOrders.find(o => o.id === orderId);
     if (!order) return;
     
-    if (confirm(`Mark order as received for ${order.customerName}?`)) {
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        const index = orders.findIndex(o => o.id === orderId);
-        if (index >= 0) {
-            orders[index].status = 'received';
-            orders[index].receivedAt = new Date().toISOString();
-            localStorage.setItem('orders', JSON.stringify(orders));
-            allOrders[index].status = 'received';
+    const trackingId = prompt(`Mark order as SHIPPED for ${order.customerName}?\n\nEnter tracking ID (optional):`, '');
+    if (trackingId !== null) {
+        try {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const index = orders.findIndex(o => o.id === orderId);
+            if (index >= 0) {
+                orders[index].status = 'shipped';
+                orders[index].trackingId = trackingId || 'N/A';
+                orders[index].shippedAt = new Date().toISOString();
+                localStorage.setItem('orders', JSON.stringify(orders));
+            }
+            
+            // Update in IndexedDB
+            await db.collection('orders').doc(orderId).update({
+                status: 'shipped',
+                trackingId: trackingId || 'N/A',
+                shippedAt: new Date().toISOString()
+            });
+            
+            allOrders[index].status = 'shipped';
+            allOrders[index].trackingId = trackingId || 'N/A';
             displayOrders();
-            alert('✅ Order marked as received!');
+            
+            // Send WhatsApp notification
+            console.log('📤 Sending WhatsApp: Order shipped with tracking ID:', trackingId);
+            sendShippingNotification(order.customerPhone, order.customerName, orderId, trackingId);
+            
+            alert('🚚 Order marked as SHIPPED!\n\nTracking ID: ' + (trackingId || 'N/A'));
+        } catch (error) {
+            console.error('Error marking as shipped:', error);
+            alert('❌ Error: ' + error.message);
+        }
+    }
+}
+
+async function markOrderDelivered(orderId) {
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    if (confirm(`Mark order as DELIVERED for ${order.customerName}?\n\nAmount: ₹${order.total}\n\n(Customer must confirm delivery)`)) {
+        try {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const index = orders.findIndex(o => o.id === orderId);
+            if (index >= 0) {
+                orders[index].status = 'delivered';
+                orders[index].deliveredAt = new Date().toISOString();
+                localStorage.setItem('orders', JSON.stringify(orders));
+            }
+            
+            // Update in IndexedDB
+            await db.collection('orders').doc(orderId).update({
+                status: 'delivered',
+                deliveredAt: new Date().toISOString()
+            });
+            
+            allOrders[index].status = 'delivered';
+            displayOrders();
+            
+            // Send WhatsApp notification
+            console.log('📤 Sending WhatsApp: Order delivered');
+            sendDeliveryNotification(order.customerPhone, order.customerName, orderId);
+            
+            alert('📦 Order marked as DELIVERED!\n\nCustomer will receive a WhatsApp confirmation.');
+        } catch (error) {
+            console.error('Error marking as delivered:', error);
+            alert('❌ Error: ' + error.message);
         }
     }
 }
@@ -683,6 +754,14 @@ function closePaymentModal() {
     }
 }
 
+// ===== WHATSAPP NOTIFICATION FUNCTIONS =====
+function sendShippingNotification(phone, customerName, orderId, trackingId) {
+    // Format phone number for WhatsApp (remove spaces and special chars)
+    const cleanPhone = phone.replace(/\D/g, '');
+    const message = `Hi ${customerName},\n\n📦 Your Klyra Studio order is on the way!\n\nOrder ID: ${orderId.substring(0, 8)}\n🚚 Tracking ID: ${trackingId || 'Will be shared soon'}\n\nYour jewelry will be delivered with utmost care.\n\nFor any queries, reach us on WhatsApp: ${CONTACT_WHATSAPP}\n\n✨ Thank you for shopping with Klyra Studio!`;
+    
+    // WhatsApp Click-to-Chat URL (opens WhatsApp with pre-filled message)\n    const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;\n    console.log('🔗 WhatsApp link:', whatsappLink);\n    \n    // Try to send via WhatsApp Click-to-Chat (manual for now)\n    // In production, integrate with Twilio or WhatsApp Business API\n    alert(`📱 Open WhatsApp to send notification to ${phone}:\\n\\n${message}\\n\\n(Copy message and send manually or integrate with Twilio API)`);\n}\n\nfunction sendDeliveryNotification(phone, customerName, orderId) {\n    const cleanPhone = phone.replace(/\\D/g, '');\n    const message = `Hi ${customerName},\n\n✅ Your Klyra Studio order has been delivered!\n\nOrder ID: ${orderId.substring(0, 8)}\n\nPlease confirm receipt and let us know about your experience.\n\n💎 We hope you love your jewelry!\n\n✨ Thank you for shopping with Klyra Studio!\n\nFor any queries, reach us on WhatsApp: ${CONTACT_WHATSAPP}`;\n    \n    const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;\n    console.log('🔗 WhatsApp link:', whatsappLink);\n    \n    alert(`📱 Open WhatsApp to notify delivery to ${phone}:\\n\\n${message}\\n\\n(Copy message and send manually or integrate with Twilio API)`);\n}
+
 // ===== EXPOSE FUNCTIONS TO WINDOW (GLOBAL SCOPE) =====
 window.switchTab = switchTab;
 window.closeProductModal = closeProductModal;
@@ -696,7 +775,8 @@ window.toggleSidebar = toggleSidebar;
 window.showAddProductModal = showAddProductModal;
 window.showAddCollectionModal = showAddCollectionModal;
 window.verifyOrderPayment = verifyOrderPayment;
-window.markOrderReceived = markOrderReceived;
+window.markOrderShipped = markOrderShipped;
+window.markOrderDelivered = markOrderDelivered;
 window.verifyPayment = verifyPayment;
 window.deleteOrder = deleteOrder;
 window.exportOrdersToSheets = exportOrdersToSheets;
