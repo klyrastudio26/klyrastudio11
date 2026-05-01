@@ -68,21 +68,38 @@ function updateAuthUI() {
     const loginBtn = document.getElementById('login-btn');
     const userMenu = document.getElementById('user-menu');
     
+    console.log('🔐 Auth check - user_phone:', userPhone);
+    
     if (userPhone) {
         // User is logged in
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (userMenu) userMenu.style.display = 'flex';
+        console.log('✓ User logged in, hiding login button');
+        if (loginBtn) {
+            loginBtn.style.display = 'none';
+            console.log('✓ Login button hidden');
+        }
+        if (userMenu) {
+            userMenu.style.display = 'flex';
+            console.log('✓ User menu shown');
+        }
         if (document.getElementById('user-name-link')) {
-            document.getElementById('user-name-link').textContent = 'My Orders';
+            document.getElementById('user-name-link').textContent = '📦 My Orders';
         }
     } else {
         // User is NOT logged in
-        if (loginBtn) loginBtn.style.display = 'block';
-        if (userMenu) userMenu.style.display = 'none';
+        console.log('✓ User NOT logged in, showing login button');
+        if (loginBtn) {
+            loginBtn.style.display = 'block';
+            console.log('✓ Login button shown');
+        }
+        if (userMenu) {
+            userMenu.style.display = 'none';
+            console.log('✓ User menu hidden');
+        }
     }
 }
 
 function logoutUser() {
+    console.log('🚪 Logging out user...');
     localStorage.removeItem('user_phone');
     sessionStorage.removeItem('cart');
     localStorage.removeItem('cart');

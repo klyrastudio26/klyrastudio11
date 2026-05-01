@@ -34,17 +34,26 @@ async function migrateLocalStorageToIndexedDB() {
         const items = JSON.parse(data);
         console.log(`Found ${items.length} items in localStorage.${collectionName}`);
         
-        // Migrate to IndexedDB
+        // Get existing items in IndexedDB
+        const existingSnapshot = await db.collection(collectionName).get();
+        const existingIds = new Set();
+        existingSnapshot.forEach(doc => {
+          existingIds.add(doc.id);
+        });
+        
+        // Only migrate items that don't already exist in IndexedDB
         for (const item of items) {
           try {
-            await db.collection(collectionName).doc(item.id).set(item);
-            itemsMigrated++;
+            if (!existingIds.has(item.id)) {
+              await db.collection(collectionName).doc(item.id).set(item);
+              itemsMigrated++;
+            }
           } catch (error) {
             console.error(`Failed to migrate ${item.id}:`, error);
           }
         }
         
-        console.log(`Migrated ${items.length} items from ${collectionName}`);
+        console.log(`Migrated ${itemsMigrated} new items from ${collectionName}`);
       }
     } catch (error) {
       console.error(`Error migrating ${collectionName}:`, error);

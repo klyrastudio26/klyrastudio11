@@ -407,7 +407,7 @@ function displayOrders() {
     const tbody = document.getElementById('orders-table-body');
     
     if (allOrders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading">No orders yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="loading">No orders yet</td></tr>';
         return;
     }
     
@@ -421,7 +421,8 @@ function displayOrders() {
             <td><span class="status-badge status-${(order.paymentStatus || 'pending').toLowerCase()}">${order.paymentStatus || 'Pending'}</span></td>
             <td>
                 <button class="btn-edit" onclick="verifyOrderPayment('${order.id}')" style="padding: 5px 10px; margin-right: 5px; font-size: 12px;">Verify</button>
-                <button class="btn-edit" onclick="markOrderReceived('${order.id}')" style="padding: 5px 10px; font-size: 12px; background-color: #28a745;">Received</button>
+                <button class="btn-edit" onclick="markOrderReceived('${order.id}')" style="padding: 5px 10px; font-size: 12px; background-color: #28a745; margin-right: 5px;">Received</button>
+                <button class="btn-delete" onclick="deleteOrder('${order.id}')" style="padding: 5px 10px; font-size: 12px; background-color: #dc3545;">Delete</button>
             </td>
         </tr>
     `).join('');
@@ -551,6 +552,27 @@ function sendWhatsAppMessage(phone, message) {
     // In production, use a proper API like Twilio or Wix
 }
 
+async function deleteOrder(orderId) {
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    if (confirm(`Delete order #${orderId.substring(0, 8)} from ${order.customerName}?\n\nAmount: ₹${order.total}\n\nThis action cannot be undone.`)) {
+        try {
+            console.log('🗑️  Deleting order:', orderId);
+            await db.collection('orders').doc(orderId).delete();
+            console.log('✓ Order deleted from database');
+            
+            alert('✓ Order deleted successfully!');
+            await loadOrders();
+            displayOrders();
+            console.log('✓ Orders list refreshed');
+        } catch (error) {
+            console.error('❌ Error deleting order:', error);
+            alert('❌ Error deleting order: ' + error.message);
+        }
+    }
+}
+
 // ===== USERS MANAGEMENT =====
 async function loadUsers() {
     try {
@@ -676,5 +698,6 @@ window.showAddCollectionModal = showAddCollectionModal;
 window.verifyOrderPayment = verifyOrderPayment;
 window.markOrderReceived = markOrderReceived;
 window.verifyPayment = verifyPayment;
+window.deleteOrder = deleteOrder;
 window.exportOrdersToSheets = exportOrdersToSheets;
 window.logout = logout;
