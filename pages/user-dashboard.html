@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Klyra Studio</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💎</text></svg>">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .user-dashboard {
+            max-width: 1000px;
+            margin: 60px auto 40px;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #d4af37;
+        }
+        
+        .dashboard-header h1 {
+            font-family: 'Playfair Display', serif;
+            color: #d4af37;
+            font-size: 32px;
+        }
+        
+        .dashboard-header .btn-logout {
+            background-color: #d4af37;
+            color: #1a1a1a;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s ease;
+        }
+        
+        .dashboard-header .btn-logout:hover {
+            background-color: #e8c547;
+        }
+        
+        .orders-container {
+            margin-top: 30px;
+        }
+        
+        .order-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .order-id {
+            font-weight: bold;
+            color: #1a1a1a;
+        }
+        
+        .order-date {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .order-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-confirmed {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+        
+        .status-shipped {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-delivered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .order-details {
+            margin: 15px 0;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .item-name {
+            flex: 1;
+        }
+        
+        .item-qty {
+            margin: 0 20px;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .item-price {
+            min-width: 80px;
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .order-summary {
+            display: flex;
+            justify-content: flex-end;
+            gap: 40px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #ddd;
+        }
+        
+        .summary-item {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .summary-item strong {
+            min-width: 100px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .no-orders {
+            text-align: center;
+            padding: 40px;
+            color: #d4af37;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>KLYRA STUDIO</h1>
+                <p>Luxury Jewelry Collection</p>
+            </div>
+            <div class="nav-links">
+                <a href="../index.html" class="active">Home</a>
+                <a href="../index.html#collections">Collections</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+                <a href="#" onclick="logoutUser()" class="btn-login" style="color: #d4af37;">Logout</a>
+                <a href="#" class="cart-icon" onclick="toggleCart()"><i class="fas fa-shopping-bag"></i><span id="cart-count">0</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- User Dashboard -->
+    <div class="user-dashboard">
+        <div class="dashboard-header">
+            <h1>📦 My Orders</h1>
+            <a href="../index.html" class="btn-logout">← Back to Shop</a>
+        </div>
+
+        <div id="orders-loading" class="loading">Loading your orders...</div>
+        <div id="orders-container" class="orders-container" style="display: none;"></div>
+        <div id="no-orders" class="no-orders" style="display: none;">No orders yet. <a href="../index.html#collections" style="color: #d4af37; text-decoration: underline;">Start shopping!</a></div>
+    </div>
+
+    <!-- Cart Modal (from main page) -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleCart()">&times;</span>
+            <h2>Shopping Cart</h2>
+            <div id="cart-items"></div>
+            <div id="cart-total" style="margin-top: 20px; font-weight: bold; font-size: 18px; color: #d4af37;"></div>
+            <button class="btn-primary" onclick="proceedToCheckout()" style="width: 100%; margin-top: 20px;">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <script src="../js/db.js"></script>
+    <script src="../js/migrate-storage.js"></script>
+    <script>
+        // Global Variables
+        let cart = [];
+        let userOrders = [];
+
+        // Wait for db to be defined globally
+        async function waitForDB() {
+            let attempts = 0;
+            while (typeof db === 'undefined' && attempts < 100) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                attempts++;
+            }
+            
+            if (typeof db === 'undefined') {
+                console.error('❌ DB failed to load');
+                return false;
+            }
+            
+            try {
+                await db.initPromise;
+                return true;
+            } catch (e) {
+                console.error('DB init error:', e);
+                return false;
+            }
+        }
+
+        // Check if user is logged in
+        function checkUserLogin() {
+            const userPhone = localStorage.getItem('user_phone');
+            if (!userPhone) {
+                window.location.href = '../pages/user-login.html';
+                return false;
+            }
+            return userPhone;
+        }
+
+        // Load user orders
+        async function loadUserOrders() {
+            try {
+                const dbReady = await waitForDB();
+                if (!dbReady) {
+                    document.getElementById('orders-loading').textContent = 'Database error. Please refresh.';
+                    return;
+                }
+
+                const userPhone = localStorage.getItem('user_phone');
+                console.log('📦 Loading orders for user:', userPhone);
+
+                const ordersSnapshot = await db.collection('orders').get();
+                userOrders = [];
+
+                ordersSnapshot.forEach((doc) => {
+                    const order = doc.data();
+                    if (order.customerPhone === userPhone) {
+                        userOrders.push({
+                            id: doc.id,
+                            ...order
+                        });
+                    }
+                });
+
+                console.log('✓ Found', userOrders.length, 'orders');
+
+                if (userOrders.length === 0) {
+                    document.getElementById('orders-loading').style.display = 'none';
+                    document.getElementById('no-orders').style.display = 'block';
+                } else {
+                    displayUserOrders();
+                }
+            } catch (error) {
+                console.error('❌ Error loading orders:', error);
+                document.getElementById('orders-loading').textContent = 'Error loading orders. Please refresh.';
+            }
+        }
+
+        // Display user orders
+        function displayUserOrders() {
+            const container = document.getElementById('orders-container');
+            document.getElementById('orders-loading').style.display = 'none';
+            container.style.display = 'block';
+
+            container.innerHTML = userOrders
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #${order.id.substring(0, 8)}</div>
+                            <div class="order-date">${new Date(order.createdAt).toLocaleDateString()}</div>
+                        </div>
+                        <span class="order-status status-${(order.status || 'pending').toLowerCase()}">${order.status || 'Pending'}</span>
+                    </div>
+
+                    <div class="order-details">
+                        <div style="margin-bottom: 10px; font-weight: bold; color: #1a1a1a;">Items:</div>
+                        ${(order.items || []).map(item => `
+                            <div class="order-item">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-qty">x${item.quantity}</div>
+                                <div class="item-price">₹${(item.price * item.quantity).toFixed(2)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="order-summary">
+                        <div class="summary-item">
+                            <strong>Subtotal:</strong>
+                            <span>₹${(order.subtotal || order.total || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>Total:</strong>
+                            <span style="font-size: 18px; color: #d4af37; font-weight: bold;">₹${(order.total || 0).toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; font-size: 12px; color: #666;">
+                        <div><strong>Shipping to:</strong> ${order.address}, ${order.city}, ${order.state} ${order.postalCode}</div>
+                        <div><strong>Payment Status:</strong> <span style="color: ${order.paymentStatus === 'verified' ? '#28a745' : '#ff6b6b'}">${order.paymentStatus || 'Pending'}</span></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load cart
+        async function loadCart() {
+            const cartData = sessionStorage.getItem('cart') || localStorage.getItem('cart');
+            if (cartData) {
+                cart = JSON.parse(cartData);
+                updateCartCount();
+            }
+        }
+
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            const cartItemsDiv = document.getElementById('cart-items');
+            const cartTotalDiv = document.getElementById('cart-total');
+
+            if (modal.style.display === 'block') {
+                modal.style.display = 'none';
+            } else {
+                if (cart.length === 0) {
+                    cartItemsDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Your cart is empty</div>';
+                    cartTotalDiv.textContent = '';
+                } else {
+                    let total = 0;
+                    cartItemsDiv.innerHTML = cart.map(item => {
+                        total += item.price * item.quantity;
+                        return `
+                            <div style="padding: 10px 0; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between;">
+                                <div><strong>${item.name}</strong><br>₹${item.price} x ${item.quantity}</div>
+                                <div>₹${(item.price * item.quantity).toFixed(2)}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    cartTotalDiv.textContent = `Total: ₹${total.toFixed(2)}`;
+                }
+                modal.style.display = 'block';
+            }
+        }
+
+        function proceedToCheckout() {
+            window.location.href = '../pages/checkout.html';
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('user_phone');
+            sessionStorage.removeItem('cart');
+            localStorage.removeItem('cart');
+            cart = [];
+            window.location.href = '../index.html';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            checkUserLogin();
+            await loadCart();
+            await loadUserOrders();
+        });
+
+        window.toggleCart = toggleCart;
+        window.proceedToCheckout = proceedToCheckout;
+        window.logoutUser = logoutUser;
+    </script>
+</body>
+</html>

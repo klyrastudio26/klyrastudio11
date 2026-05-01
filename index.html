@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klyra Studio - Luxury Jewelry | Instagram</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Klyra Studio - Luxury Jewelry | Instagram</title>    <link rel=\"icon\" type=\"image/x-icon\" href=\"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💎</text></svg>\">    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -21,7 +20,13 @@
                 <a href="#collections">Collections</a>
                 <a href="#about">About</a>
                 <a href="#contact">Contact</a>
-                <a href="pages/user-login.html" class="btn-login">Sign In</a>
+                <div id="auth-buttons" style="display: flex; gap: 15px; align-items: center;">
+                    <a href="pages/user-login.html" class="btn-login" id="login-btn">Sign In</a>
+                    <div id="user-menu" style="display: none;">
+                        <a href="pages/user-dashboard.html" class="btn-login" id="user-name-link" style="color: #d4af37; text-decoration: none;">My Orders</a>
+                        <a href="#" onclick="logoutUser()" class="btn-login" style="color: #d4af37; margin-left: 10px;">Logout</a>
+                    </div>
+                </div>
                 <a href="#" class="cart-icon" onclick="toggleCart()"><i class="fas fa-shopping-bag"></i><span id="cart-count">0</span></a>
             </div>
         </div>

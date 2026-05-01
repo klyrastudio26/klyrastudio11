@@ -62,6 +62,38 @@ async function reloadAllData() {
 // Make sure it's globally accessible
 window.reloadAllData = reloadAllData;
 
+// ===== USER AUTHENTICATION =====
+function updateAuthUI() {
+    const userPhone = localStorage.getItem('user_phone');
+    const loginBtn = document.getElementById('login-btn');
+    const userMenu = document.getElementById('user-menu');
+    
+    if (userPhone) {
+        // User is logged in
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'flex';
+        if (document.getElementById('user-name-link')) {
+            document.getElementById('user-name-link').textContent = 'My Orders';
+        }
+    } else {
+        // User is NOT logged in
+        if (loginBtn) loginBtn.style.display = 'block';
+        if (userMenu) userMenu.style.display = 'none';
+    }
+}
+
+function logoutUser() {
+    localStorage.removeItem('user_phone');
+    sessionStorage.removeItem('cart');
+    localStorage.removeItem('cart');
+    cart = [];
+    updateAuthUI();
+    window.location.href = '/klyrastudio/index.html';
+}
+
+window.updateAuthUI = updateAuthUI;
+window.logoutUser = logoutUser;
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('=== Page loaded - waiting for DB ===');
@@ -74,6 +106,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadProducts();
         await loadCollections();
         await loadCart();
+        
+        // Check if user is logged in
+        updateAuthUI();
         
         console.log('✓ Initialization complete');
     } catch (error) {
@@ -140,7 +175,7 @@ function displayProducts(productsToShow) {
     grid.innerHTML = productsToShow.map(product => `
         <div class="product-card">
             <div class="product-image">
-                <img src="${product.image || 'https://via.placeholder.com/280x250/e8e8e8/999?text=No+Image'}" alt="${product.name}">
+                <img src="${product.image || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 280 250%22%3E%3Crect fill=%22%23e8e8e8%22 width=%22280%22 height=%22250%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E'}" alt="${product.name}">
             </div>
             <div class="product-info">
                 <div class="product-collection">${product.collection || 'Collection'}</div>
