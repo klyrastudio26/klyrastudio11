@@ -756,11 +756,69 @@ function closePaymentModal() {
 
 // ===== WHATSAPP NOTIFICATION FUNCTIONS =====
 function sendShippingNotification(phone, customerName, orderId, trackingId) {
-    // Format phone number for WhatsApp (remove spaces and special chars)
+    // Format phone number for WhatsApp
     const cleanPhone = phone.replace(/\D/g, '');
     const message = `Hi ${customerName},\n\n📦 Your Klyra Studio order is on the way!\n\nOrder ID: ${orderId.substring(0, 8)}\n🚚 Tracking ID: ${trackingId || 'Will be shared soon'}\n\nYour jewelry will be delivered with utmost care.\n\nFor any queries, reach us on WhatsApp: ${CONTACT_WHATSAPP}\n\n✨ Thank you for shopping with Klyra Studio!`;
     
-    // WhatsApp Click-to-Chat URL (opens WhatsApp with pre-filled message)\n    const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;\n    console.log('🔗 WhatsApp link:', whatsappLink);\n    \n    // Try to send via WhatsApp Click-to-Chat (manual for now)\n    // In production, integrate with Twilio or WhatsApp Business API\n    alert(`📱 Open WhatsApp to send notification to ${phone}:\\n\\n${message}\\n\\n(Copy message and send manually or integrate with Twilio API)`);\n}\n\nfunction sendDeliveryNotification(phone, customerName, orderId) {\n    const cleanPhone = phone.replace(/\\D/g, '');\n    const message = `Hi ${customerName},\n\n✅ Your Klyra Studio order has been delivered!\n\nOrder ID: ${orderId.substring(0, 8)}\n\nPlease confirm receipt and let us know about your experience.\n\n💎 We hope you love your jewelry!\n\n✨ Thank you for shopping with Klyra Studio!\n\nFor any queries, reach us on WhatsApp: ${CONTACT_WHATSAPP}`;\n    \n    const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;\n    console.log('🔗 WhatsApp link:', whatsappLink);\n    \n    alert(`📱 Open WhatsApp to notify delivery to ${phone}:\\n\\n${message}\\n\\n(Copy message and send manually or integrate with Twilio API)`);\n}
+    // Copy to clipboard
+    navigator.clipboard.writeText(message).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = message;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    });
+    
+    // WhatsApp link
+    const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    showWhatsAppModal(customerName, message, whatsappLink, phone);
+}
+
+function sendDeliveryNotification(phone, customerName, orderId) {
+    const cleanPhone = phone.replace(/\D/g, '');
+    const message = `Hi ${customerName},\n\n✅ Your Klyra Studio order has been delivered!\n\nOrder ID: ${orderId.substring(0, 8)}\n\nPlease confirm receipt and let us know about your experience.\n\n💎 We hope you love your jewelry!\n\n✨ Thank you for shopping with Klyra Studio!\n\nFor any queries, reach us on WhatsApp: ${CONTACT_WHATSAPP}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(message).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = message;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    });
+    
+    // WhatsApp link
+    const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    showWhatsAppModal(customerName, message, whatsappLink, phone);
+}
+
+function showWhatsAppModal(customerName, message, whatsappLink, phone) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 10000;`;
+    
+    modal.innerHTML = `<div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto;">
+        <h2 style="margin-bottom: 15px; color: #d4af37; display: flex; align-items: center; gap: 10px;"><span>📱</span> WhatsApp Message Ready</h2>
+        <p style="color: #666; margin-bottom: 15px;">To: <strong>${customerName}</strong> (${phone})</p>
+        
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #25d366;">
+            <pre style="white-space: pre-wrap; word-wrap: break-word; font-size: 13px; line-height: 1.6; margin: 0;">${message}</pre>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button onclick="this.closest('div').closest('div').remove()" style="flex: 1; padding: 12px; background: #ddd; color: #333; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">❌ Close</button>
+            <a href="${whatsappLink}" target="_blank" style="flex: 1; padding: 12px; background: #25d366; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;">💬 Open WhatsApp</a>
+        </div>
+        
+        <p style="font-size: 12px; color: #999; text-align: center; margin: 0;">✓ Message copied to clipboard | Click button to send</p>
+    </div>`;
+    
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
 
 // ===== EXPOSE FUNCTIONS TO WINDOW (GLOBAL SCOPE) =====
 window.switchTab = switchTab;
