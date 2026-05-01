@@ -14,6 +14,7 @@
     <h1>IndexedDB Data Inspector</h1>
     <button onclick="checkIndexedDB()">📊 Check IndexedDB</button>
     <button onclick="checkLocalStorage()">💾 Check localStorage</button>
+    <button onclick="checkOrders()">📦 Check Orders by Phone</button>
     <button onclick="clearAllData()">🗑️ Clear All Data</button>
     <button onclick="addTestProduct()">➕ Add Test Product</button>
     <hr>
@@ -123,6 +124,68 @@
                 }, 500);
             } catch (e) {
                 await log('❌ Error: ' + e.message, 'error');
+            }
+        }
+
+        async function checkOrders() {
+            document.getElementById('output').innerHTML = '';
+            
+            // Wait for db to load
+            let attempts = 0;
+            while (typeof db === 'undefined' && attempts < 100) {
+                await new Promise(r => setTimeout(r, 50));
+                attempts++;
+            }
+            
+            if (typeof db === 'undefined') {
+                await log('❌ DB not loaded!', 'error');
+                return;
+            }
+            
+            await db.initPromise;
+            await log('✓ DB initialized', 'success');
+            
+            const userPhone = localStorage.getItem('user_phone');
+            await log(`🔐 Current user phone from localStorage: ${userPhone || 'NOT SET'}`, userPhone ? 'success' : 'error');
+            
+            try {
+                const ordersSnapshot = await db.collection('orders').get();
+                const count = ordersSnapshot.docs ? ordersSnapshot.docs.length : 0;
+                await log(`📦 Total orders in database: ${count}`, 'log');
+                
+                if (count > 0) {
+                    await log('━━━ ALL ORDERS ━━━', 'log');
+                    for (let i = 0; i < ordersSnapshot.docs.length; i++) {
+                        const doc = ordersSnapshot.docs[i];
+                        const order = doc.data();
+                        
+                        await log(`\n[Order ${i + 1}]`, 'log');
+                        await log(`  ID: ${doc.id}`, 'log');
+                        await log(`  Customer Phone: ${order.customerPhone || 'MISSING'}`, order.customerPhone ? 'success' : 'error');
+                        await log(`  Customer Name: ${order.customerName || 'N/A'}`, 'log');
+                        await log(`  Total: ₹${order.total || 0}`, 'log');
+                        await log(`  Status: ${order.status || 'N/A'}`, 'log');
+                        await log(`  Items: ${(order.items || []).length}`, 'log');
+                        
+                        // Check if this order matches the logged-in user
+                        if (userPhone && order.customerPhone === userPhone) {
+                            await log(`  ✓ MATCHES CURRENT USER`, 'success');
+                        } else if (userPhone) {
+                            await log(`  ✗ Does NOT match current user`, 'error');
+                        }
+                    }
+                    
+                    // Now filter by current user
+                    if (userPhone) {
+                        await log('\n━━━ FILTERING BY CURRENT USER ━━━', 'log');
+                        const userOrders = await db.collection('orders').where('customerPhone', '==', userPhone).get();
+                        await log(`✓ Found ${userOrders.docs.length} orders for user ${userPhone}`, userOrders.docs.length > 0 ? 'success' : 'error');
+                    }
+                } else {
+                    await log('No orders found in database', 'error');
+                }
+            } catch (e) {
+                await log(`❌ ${e.message}`, 'error');
             }
         }
 
