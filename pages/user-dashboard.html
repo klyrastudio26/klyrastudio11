@@ -337,22 +337,31 @@
                 }
 
                 const userPhone = localStorage.getItem('user_phone');
-                console.log('📦 Loading orders for user:', userPhone);
+                console.log('📦 Loading orders for user phone:', userPhone);
 
-                const ordersSnapshot = await db.collection('orders').get();
+                if (!userPhone) {
+                    console.error('❌ No user phone found in localStorage');
+                    document.getElementById('orders-loading').textContent = 'Error: User phone not found.';
+                    return;
+                }
+
+                // Method 1: Use where() for cleaner query
+                const querySnapshot = await db.collection('orders').where('customerPhone', '==', userPhone).get();
                 userOrders = [];
 
-                ordersSnapshot.forEach((doc) => {
+                querySnapshot.forEach((doc) => {
                     const order = doc.data();
-                    if (order.customerPhone === userPhone) {
-                        userOrders.push({
-                            id: doc.id,
-                            ...order
-                        });
-                    }
+                    userOrders.push({
+                        id: doc.id,
+                        ...order
+                    });
                 });
 
-                console.log('✓ Found', userOrders.length, 'orders');
+                console.log('✓ Found', userOrders.length, 'orders for phone:', userPhone);
+                
+                if (userOrders.length > 0) {
+                    console.log('📋 First order:', JSON.stringify(userOrders[0], null, 2));
+                }
 
                 if (userOrders.length === 0) {
                     document.getElementById('orders-loading').style.display = 'none';
