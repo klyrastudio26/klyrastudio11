@@ -50,39 +50,47 @@
         }
         
         .order-card {
-            background: #f9f9f9;
+            background: #ffffff;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .order-id-section {
+            flex: 1;
         }
         
         .order-id {
             font-weight: bold;
             color: #1a1a1a;
+            font-size: 16px;
+            margin-bottom: 5px;
         }
         
         .order-date {
-            color: #666;
-            font-size: 14px;
+            color: #999;
+            font-size: 13px;
         }
         
         .order-status {
             display: inline-block;
-            padding: 5px 12px;
-            border-radius: 4px;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .status-pending {
@@ -103,6 +111,79 @@
         .status-delivered {
             background-color: #d4edda;
             color: #155724;
+        }
+        
+        /* Order Timeline */
+        .order-timeline {
+            margin: 20px 0;
+            padding: 20px 0;
+            border: 1px solid #f0f0f0;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        
+        .timeline-item {
+            display: flex;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+        }
+        
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+        
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .timeline-icon.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .timeline-icon.confirmed {
+            background: #cfe2ff;
+            color: #084298;
+        }
+        
+        .timeline-icon.shipped {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .timeline-icon.delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .timeline-content {
+            flex: 1;
+        }
+        
+        .timeline-title {
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+        }
+        
+        .timeline-desc {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .timeline-time {
+            font-size: 12px;
+            color: #999;
+            text-align: right;
         }
         
         .order-details {
@@ -293,42 +374,77 @@
 
             container.innerHTML = userOrders
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                .map(order => `
-                <div class="order-card">
-                    <div class="order-header">
-                        <div>
-                            <div class="order-id">Order #${order.id.substring(0, 8)}</div>
-                            <div class="order-date">${new Date(order.createdAt).toLocaleDateString()}</div>
-                        </div>
-                        <span class="order-status status-${(order.status || 'pending').toLowerCase()}">${order.status || 'Pending'}</span>
-                    </div>
-
-                    <div class="order-details">
-                        <div style="margin-bottom: 10px; font-weight: bold; color: #1a1a1a;">Items:</div>
-                        ${(order.items || []).map(item => `
-                            <div class="order-item">
-                                <div class="item-name">${item.name}</div>
-                                <div class="item-qty">x${item.quantity}</div>
-                                <div class="item-price">₹${(item.price * item.quantity).toFixed(2)}</div>
+                .map(order => {
+                    const getTimelineSteps = (status) => {
+                        const steps = [
+                            { name: 'pending', label: 'Order Placed', icon: '📋' },
+                            { name: 'confirmed', label: 'Confirmed', icon: '✓' },
+                            { name: 'shipped', label: 'Shipped', icon: '🚚' },
+                            { name: 'delivered', label: 'Delivered', icon: '📦' }
+                        ];
+                        
+                        const currentIndex = steps.findIndex(s => s.name === (status || 'pending').toLowerCase());
+                        return steps.map((step, idx) => ({
+                            ...step,
+                            active: idx <= currentIndex
+                        }));
+                    };
+                    
+                    const timeline = getTimelineSteps(order.status);
+                    
+                    return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-id-section">
+                                <div class="order-id">Order #${order.id.substring(0, 8)}</div>
+                                <div class="order-date">${new Date(order.createdAt).toLocaleDateString()} at ${new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                             </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="order-summary">
-                        <div class="summary-item">
-                            <strong>Subtotal:</strong>
-                            <span>₹${(order.subtotal || order.total || 0).toFixed(2)}</span>
+                            <span class="order-status status-${(order.status || 'pending').toLowerCase()}">${order.status || 'Pending'}</span>
                         </div>
-                        <div class="summary-item">
-                            <strong>Total:</strong>
-                            <span style="font-size: 18px; color: #d4af37; font-weight: bold;">₹${(order.total || 0).toFixed(2)}</span>
+
+                        <!-- Order Timeline (Flipkart style) -->
+                        <div class="order-timeline">
+                            ${timeline.map((step, idx) => `
+                                <div class="timeline-item">
+                                    <div class="timeline-icon ${step.active ? step.name : 'pending'}">${step.icon}</div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-title">${step.label}</div>
+                                        <div class="timeline-desc">${step.active ? 'Completed' : 'Upcoming'}</div>
+                                    </div>
+                                    <div class="timeline-time">${step.active ? '✓' : ''}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="order-details">
+                            <div style="margin-bottom: 10px; font-weight: bold; color: #1a1a1a;">Items Ordered:</div>
+                            ${(order.items || []).map(item => `
+                                <div class="order-item">
+                                    <div class="item-name">${item.name}</div>
+                                    <div class="item-qty">x${item.quantity}</div>
+                                    <div class="item-price">₹${(item.price * item.quantity).toFixed(2)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="order-summary">
+                            <div class="summary-item">
+                                <strong>Subtotal:</strong>
+                                <span>₹${(order.subtotal || order.total || 0).toFixed(2)}</span>
+                            </div>
+                            <div class="summary-item">
+                                <strong>Total:</strong>
+                                <span style="font-size: 18px; color: #d4af37; font-weight: bold;">₹${(order.total || 0).toFixed(2)}</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0; font-size: 12px; color: #666;">
+                            <div style="margin-bottom: 8px;"><strong>📍 Shipping to:</strong> ${order.address}, ${order.city}, ${order.state} ${order.postalCode}</div>
+                            <div><strong>💳 Payment Status:</strong> <span style="color: ${order.paymentStatus === 'verified' ? '#28a745' : '#ff9800'}">${order.paymentStatus === 'verified' ? '✓ Verified' : '⏱ Pending'}</span></div>
                         </div>
                     </div>
-
-                    <div style="margin-top: 15px; font-size: 12px; color: #666;">
-                        <div><strong>Shipping to:</strong> ${order.address}, ${order.city}, ${order.state} ${order.postalCode}</div>
-                        <div><strong>Payment Status:</strong> <span style="color: ${order.paymentStatus === 'verified' ? '#28a745' : '#ff6b6b'}">${order.paymentStatus || 'Pending'}</span></div>
-                    </div>
+                    `;
+                }).join('');
                 </div>
             `).join('');
         }
