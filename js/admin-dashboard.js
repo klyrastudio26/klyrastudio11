@@ -670,10 +670,10 @@ function displayUsers() {
     }
     
     tbody.innerHTML = allUsers.map(user => {
-        const userOrders = allOrders.filter(o => o.userId === user.id).length;
+        const userOrders = allOrders.filter(o => o.customerPhone === user.phone).length;
         const totalSpent = allOrders
-            .filter(o => o.userId === user.id && o.status === 'confirmed')
-            .reduce((sum, o) => sum + (o.total || 0), 0);
+            .filter(o => o.customerPhone === user.phone && o.paymentStatus === 'verified')
+            .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
         
         return `
             <tr>
@@ -681,7 +681,7 @@ function displayUsers() {
                 <td>${user.phone}</td>
                 <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                 <td>${userOrders}</td>
-                <td>₹${totalSpent}</td>
+                <td>₹${totalSpent.toFixed(2)}</td>
                 <td>
                     <button class="btn-edit" onclick="viewUserDetails('${user.id}')">View</button>
                 </td>
@@ -694,8 +694,11 @@ function viewUserDetails(userId) {
     const user = allUsers.find(u => u.id === userId);
     if (!user) return;
     
-    const userOrders = allOrders.filter(o => o.userId === userId);
-    alert(`User Details:\n\nPhone: ${user.phone}\nJoined: ${new Date(user.createdAt).toLocaleDateString()}\nTotal Orders: ${userOrders.length}`);
+    const userOrders = allOrders.filter(o => o.customerPhone === user.phone);
+    const totalSpent = userOrders
+        .filter(o => o.paymentStatus === 'verified')
+        .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+    alert(`User Details:\n\nPhone: ${user.phone}\nJoined: ${new Date(user.createdAt).toLocaleDateString()}\nTotal Orders: ${userOrders.length}\nTotal Spent: ₹${totalSpent.toFixed(2)}`);
 }
 
 // ===== DASHBOARD STATS =====
@@ -706,9 +709,27 @@ function updateDashboardStats() {
     
     const revenue = allOrders
         .filter(o => o.status === 'confirmed' && o.paymentStatus === 'verified')
-        .reduce((sum, o) => sum + (o.total || 0), 0);
+        .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+
+    const now = new Date();
+    const thisMonthRevenue = allOrders
+        .filter(o => {
+            const d = new Date(o.createdAt);
+            return o.status === 'confirmed' && o.paymentStatus === 'verified' && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+        })
+        .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+
+    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthRevenue = allOrders
+        .filter(o => {
+            const d = new Date(o.createdAt);
+            return o.status === 'confirmed' && o.paymentStatus === 'verified' && d.getFullYear() === lastMonthDate.getFullYear() && d.getMonth() === lastMonthDate.getMonth();
+        })
+        .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
     
-    document.getElementById('total-revenue').textContent = `₹${revenue}`;
+    document.getElementById('total-revenue').textContent = `₹${revenue.toFixed(2)}`;
+    document.getElementById('revenue-this-month').textContent = `₹${thisMonthRevenue.toFixed(2)}`;
+    document.getElementById('revenue-last-month').textContent = `₹${lastMonthRevenue.toFixed(2)}`;
 }
 
 function loadRecentOrders() {
