@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="title desc">
+  <title id="title">Klyra Studio logo</title>
+  <desc id="desc">Gold letter K monogram inside a diamond shape</desc>
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f4d056"/>
+      <stop offset="50%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#b08a24"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="40" fill="transparent"/>
+  <path d="M100 20 L160 90 L100 180 L40 90 Z" fill="url(#goldGradient)" stroke="#f4d056" stroke-width="6"/>
+  <path d="M82 50 L120 100 L82 150" fill="none" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
+  <path d="M92 50 L140 50 L110 100 L140 150 L92 150" fill="none" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
+</svg>

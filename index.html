@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klyra Studio - Luxury Jewelry | Instagram</title>    <link rel=\"icon\" type=\"image/x-icon\" href=\"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💎</text></svg>\">    <link rel="stylesheet" href="css/style.css">
+    <title>Klyra Studio - Luxury Jewelry | Instagram</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -12,10 +13,16 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <h1>KLYRA STUDIO</h1>
-                <p>Luxury Jewelry Collection</p>
+                <img src="assets/klyra-logo.svg" alt="Klyra Studio Logo" class="brand-logo">
+                <div>
+                    <h1>KLYRA STUDIO</h1>
+                    <p>Luxury Jewelry Collection</p>
+                </div>
             </div>
-            <div class="nav-links">
+            <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleMobileMenu()" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="nav-links" id="navLinks">
                 <a href="#home" class="active">Home</a>
                 <a href="#collections">Collections</a>
                 <a href="#about">About</a>
@@ -46,7 +53,7 @@
         <div class="container">
             <h2>Our Collections <button onclick="reloadAllData()" style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 0 5px;">🔄</button></h2>
             <div class="filter-buttons">
-                <button class="filter-btn active" onclick="filterProducts('all')">All Products</button>
+                <button class="filter-btn active" onclick="filterProducts(event, 'all')">All Products</button>
                 <span id="collection-filters"></span>
             </div>
             <div class="products-grid" id="products-grid">

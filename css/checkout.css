@@ -26,12 +26,24 @@ body {
     color: #ffffff;
 }
 
+.checkout-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 .logo h1 {
     font-family: 'Playfair Display', serif;
     font-size: 24px;
     color: #d4af37;
     letter-spacing: 2px;
     margin-bottom: 30px;
+}
+
+.brand-logo {
+    width: 54px;
+    height: auto;
+    display: block;
 }
 
 .steps {

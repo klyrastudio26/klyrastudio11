@@ -696,7 +696,7 @@ function viewUserDetails(userId) {
     
     const userOrders = allOrders.filter(o => o.customerPhone === user.phone);
     const totalSpent = userOrders
-        .filter(o => o.paymentStatus === 'verified')
+        .filter(o => o.paymentStatus === 'verified' || o.status === 'delivered')
         .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
     alert(`User Details:\n\nPhone: ${user.phone}\nJoined: ${new Date(user.createdAt).toLocaleDateString()}\nTotal Orders: ${userOrders.length}\nTotal Spent: ₹${totalSpent.toFixed(2)}`);
 }
@@ -708,28 +708,10 @@ function updateDashboardStats() {
     document.getElementById('total-users').textContent = allUsers.length;
     
     const revenue = allOrders
-        .filter(o => o.status === 'confirmed' && o.paymentStatus === 'verified')
-        .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
-
-    const now = new Date();
-    const thisMonthRevenue = allOrders
-        .filter(o => {
-            const d = new Date(o.createdAt);
-            return o.status === 'confirmed' && o.paymentStatus === 'verified' && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-        })
-        .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
-
-    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthRevenue = allOrders
-        .filter(o => {
-            const d = new Date(o.createdAt);
-            return o.status === 'confirmed' && o.paymentStatus === 'verified' && d.getFullYear() === lastMonthDate.getFullYear() && d.getMonth() === lastMonthDate.getMonth();
-        })
+        .filter(o => o.paymentStatus === 'verified' || o.status === 'delivered')
         .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
     
     document.getElementById('total-revenue').textContent = `₹${revenue.toFixed(2)}`;
-    document.getElementById('revenue-this-month').textContent = `₹${thisMonthRevenue.toFixed(2)}`;
-    document.getElementById('revenue-last-month').textContent = `₹${lastMonthRevenue.toFixed(2)}`;
 }
 
 function loadRecentOrders() {

@@ -85,7 +85,16 @@ async function startMigration() {
   }
 }
 
-// Try to start migration immediately, then on DOMContentLoaded as fallback
-startMigration().catch(() => {
-  document.addEventListener('DOMContentLoaded', startMigration);
+// Expose a global migration promise so pages can wait for the process
+window.dbMigrationPromise = startMigration().catch((error) => {
+  console.error('Migration startup failed:', error);
+});
+
+// Also retry on DOMContentLoaded if the first attempt did not run yet
+window.addEventListener('DOMContentLoaded', () => {
+  if (!window.dbMigrationPromise) {
+    window.dbMigrationPromise = startMigration().catch((error) => {
+      console.error('Migration startup failed:', error);
+    });
+  }
 });

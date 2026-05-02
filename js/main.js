@@ -118,11 +118,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Wait for db to be ready
         await waitForDB();
+
+        // Ensure any localStorage->IndexedDB migration has completed before loading products
+        if (window.dbMigrationPromise) {
+            console.log('Waiting for migration to complete...');
+            await window.dbMigrationPromise;
+            console.log('Migration completed before rendering products');
+        }
         
         console.log('Loading data...');
         await loadProducts();
         await loadCollections();
         await loadCart();
+        
+        // Close mobile menu when a nav link is clicked
+        document.querySelectorAll('#navLinks a').forEach(link => {
+            link.addEventListener('click', () => {
+                const navLinks = document.getElementById('navLinks');
+                const menuToggle = document.getElementById('menuToggle');
+                if (navLinks && menuToggle && navLinks.classList.contains('open')) {
+                    navLinks.classList.remove('open');
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+            });
+        });
         
         // Check if user is logged in
         updateAuthUI();
@@ -168,7 +187,7 @@ async function loadCollections() {
                 id: doc.id,
                 ...collectionData
             });
-            filterHTML += `<button class="filter-btn" onclick="filterProducts('${collectionData.name}')">${collectionData.name}</button>`;
+            filterHTML += `<button class="filter-btn" onclick="filterProducts(event, '${collectionData.name}')">${collectionData.name}</button>`;
         });
         
         console.log('Loaded collections:', collections);
@@ -189,10 +208,14 @@ function displayProducts(productsToShow) {
         return;
     }
 
-    grid.innerHTML = productsToShow.map(product => `
+    const fallbackImage = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 280 250%22%3E%3Crect fill=%22%23e8e8e8%22 width=%22280%22 height=%22250%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E';
+
+    grid.innerHTML = productsToShow.map(product => {
+        const imageSrc = product.image || fallbackImage;
+        return `
         <div class="product-card">
             <div class="product-image">
-                <img src="${product.image || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 280 250%22%3E%3Crect fill=%22%23e8e8e8%22 width=%22280%22 height=%22250%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2220%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E'}" alt="${product.name}">
+                <img src="${imageSrc}" alt="${product.name}" onerror="this.onerror=null;this.src='${fallbackImage}';">
             </div>
             <div class="product-info">
                 <div class="product-collection">${product.collection || 'Collection'}</div>
@@ -205,13 +228,18 @@ function displayProducts(productsToShow) {
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
-function filterProducts(collectionId) {
+function filterProducts(event, collectionId) {
     // Update active filter button
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    } else if (event && event.target) {
+        event.target.classList.add('active');
+    }
 
     if (collectionId === 'all') {
         displayProducts(products);
@@ -327,6 +355,19 @@ function loadCart() {
     }
 }
 
+function toggleMobileMenu() {
+    const navLinks = document.getElementById('navLinks');
+    const menuToggle = document.getElementById('menuToggle');
+    if (!navLinks || !menuToggle) return;
+
+    navLinks.classList.toggle('open');
+    if (navLinks.classList.contains('open')) {
+        menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+    } else {
+        menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+    }
+}
+
 // ===== CHECKOUT FUNCTIONS =====
 function proceedToCheckout() {
     if (cart.length === 0) {
@@ -426,6 +467,7 @@ document.head.appendChild(style);
 // These must be after function declarations to avoid hoisting issues
 window.toggleDebug = toggleDebug;
 window.toggleCart = toggleCart;
+window.toggleMobileMenu = toggleMobileMenu;
 window.filterProducts = filterProducts;
 window.addToCart = addToCart;
 window.viewProduct = viewProduct;

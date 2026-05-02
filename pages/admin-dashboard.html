@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Klyra Studio</title>
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💎</text></svg>">
     <link rel="stylesheet" href="../css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +12,11 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>KLYRA ADMIN</h2>
+            <img src="../assets/klyra-logo.svg" alt="Klyra Studio Logo" class="brand-logo">
+            <div>
+                <h2>KLYRA STUDIO</h2>
+                <p style="font-size: 12px; letter-spacing: 1px; margin: 0; color: #f0e6c8;">Luxury Jewelry Brand</p>
+            </div>
             <button class="toggle-sidebar" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
         </div>
         <nav class="sidebar-nav">
@@ -82,24 +85,6 @@
                     <div class="stat-details">
                         <h3>Revenue</h3>
                         <p id="total-revenue">₹0</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>This Month</h3>
-                        <p id="revenue-this-month">₹0</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-history"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>Last Month</h3>
-                        <p id="revenue-last-month">₹0</p>
                     </div>
                 </div>
                 <div class="stat-card">
