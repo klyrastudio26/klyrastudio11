@@ -272,6 +272,20 @@
             <a href="../index.html" class="btn-logout">← Back to Shop</a>
         </div>
 
+        <!-- Money Spent Summary -->
+        <div id="money-spent-summary" style="background: linear-gradient(135deg, #d4af37 0%, #e8c547 100%); color: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">💎 Total Money Spent</p>
+                    <h2 id="total-money-spent" style="margin: 8px 0 0 0; font-size: 32px; font-weight: bold;">₹0</h2>
+                </div>
+                <div style="text-align: right;">
+                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">📊 Total Orders</p>
+                    <h3 id="total-orders-count" style="margin: 8px 0 0 0; font-size: 28px; font-weight: bold;">0</h3>
+                </div>
+            </div>
+        </div>
+
         <div id="orders-loading" class="loading">Loading your orders...</div>
         <div id="orders-container" class="orders-container" style="display: none;"></div>
         <div id="no-orders" class="no-orders" style="display: none;">No orders yet. <a href="../index.html#collections" style="color: #d4af37; text-decoration: underline;">Start shopping!</a></div>
@@ -367,6 +381,13 @@
                     document.getElementById('orders-loading').style.display = 'none';
                     document.getElementById('no-orders').style.display = 'block';
                 } else {
+                    // Calculate total money spent
+                    const totalSpent = userOrders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
+                    document.getElementById('total-money-spent').textContent = `₹${totalSpent.toFixed(2)}`;
+                    document.getElementById('total-orders-count').textContent = userOrders.length;
+                    document.getElementById('money-spent-summary').style.display = 'block';
+                    console.log('💰 Total money spent:', totalSpent, 'Orders:', userOrders.length);
+                    
                     displayUserOrders();
                 }
             } catch (error) {
@@ -438,11 +459,15 @@
 
                         <div class="order-summary">
                             <div class="summary-item">
-                                <strong>Subtotal:</strong>
-                                <span>₹${(order.subtotal || order.total || 0).toFixed(2)}</span>
+                                <strong>Subtotal (before tax):</strong>
+                                <span>₹${(order.subtotal || 0).toFixed(2)}</span>
                             </div>
                             <div class="summary-item">
-                                <strong>Total:</strong>
+                                <strong>Tax (18%):</strong>
+                                <span>₹${(order.tax || 0).toFixed(2)}</span>
+                            </div>
+                            <div class="summary-item" style="border-top: 1px solid #ddd; padding-top: 10px; margin-top: 10px;">
+                                <strong style="font-size: 16px;">Total Amount Paid:</strong>
                                 <span style="font-size: 18px; color: #d4af37; font-weight: bold;">₹${(order.total || 0).toFixed(2)}</span>
                             </div>
                         </div>

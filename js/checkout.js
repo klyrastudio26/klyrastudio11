@@ -287,26 +287,41 @@ async function submitOrder() {
         // Generate order ID
         const orderId = 'KLY' + Date.now();
 
-        // Create order in Firestore
+        // Create order with all details
         const orderData = {
             id: orderId,
             items: checkoutData.items,
-            subtotal: checkoutData.subtotal,
-            tax: checkoutData.tax,
-            total: checkoutData.total,
+            subtotal: parseFloat(checkoutData.subtotal),
+            tax: parseFloat(checkoutData.tax),
+            total: parseFloat(checkoutData.total),
             customerName: shippingData.fullName,
             customerPhone: shippingData.phone,
             customerEmail: shippingData.email,
+            address: shippingData.address,
+            city: shippingData.city,
+            state: shippingData.state,
+            postalCode: shippingData.postalCode,
+            country: shippingData.country,
             shipping: shippingData,
             paymentScreenshot: screenshotURL,
             status: 'pending',
             paymentStatus: 'pending',
             createdAt: new Date().toISOString(),
-            upiId: PAYMENT_UPI
+            updatedAt: new Date().toISOString(),
+            upiId: PAYMENT_UPI,
+            trackingId: null
         };
 
-        // Save to Firestore
+        console.log('📦 Saving order to IndexedDB:', orderId);
+        console.log('   Subtotal:', orderData.subtotal);
+        console.log('   Tax:', orderData.tax);
+        console.log('   Total:', orderData.total);
+        console.log('   Phone:', orderData.customerPhone);
+        console.log('   Screenshot:', screenshotURL ? '✓ Uploaded' : '❌ Missing');
+
+        // Save to database (IndexedDB with localStorage fallback)
         await db.collection('orders').doc(orderId).set(orderData);
+        console.log('✓ Order saved successfully!');
 
         // Send WhatsApp notification
         sendOrderWhatsApp(shippingData.phone, orderData);
@@ -341,14 +356,10 @@ async function uploadPaymentScreenshot(file) {
 }
 
 function sendOrderWhatsApp(phone, orderData) {
-    const message = `Hi ${orderData.customerName},\n\n✓ Your order has been placed successfully!\n\n📦 Order ID: ${orderData.id}\n💰 Amount: ₹${orderData.total}\n\n⏳ Status: Awaiting payment verification\n\n📤 You have uploaded the payment screenshot. Our admin will verify it shortly.\n\n🎁 Thank you for shopping with Klyra Studio!\n\nFor any queries, call: ${CONTACT_WHATSAPP}`;
+    const message = `Hi ${orderData.customerName},\n\n✓ Your order has been placed successfully!\n\n📦 Order ID: ${orderData.id}\n💰 Amount: ₹${(orderData.total || 0).toFixed(2)} (including tax)\n\n⏳ Status: Awaiting payment verification\n\n📤 You have uploaded the payment screenshot. Our admin will verify it shortly.\n\n🎁 Thank you for shopping with Klyra Studio!\n\nFor any queries, call: ${CONTACT_WHATSAPP}`;
     
-    // This would require WhatsApp Business API integration
-    // For now, log the message
-    console.log('WhatsApp Message would be sent to:', phone);
+    console.log('📱 Order confirmation message ready for:', phone);
     console.log('Message:', message);
-    
-    // In production, send via Twilio or WhatsApp Business API
 }
 
 function showSuccessModal(orderId, total) {
