@@ -256,7 +256,10 @@
                     <p>Luxury Jewelry Collection</p>
                 </div>
             </div>
-            <div class="nav-links">
+            <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleMobileMenu()" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+            <div class="nav-links" id="navLinks">
                 <a href="../index.html" class="active">Home</a>
                 <a href="../index.html#collections">Collections</a>
                 <a href="#about">About</a>
@@ -278,7 +281,7 @@
         <div id="money-spent-summary" style="background: linear-gradient(135deg, #d4af37 0%, #e8c547 100%); color: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">💎 Total Money Spent</p>
+                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">Total Money Spent</p>
                     <h2 id="total-money-spent" style="margin: 8px 0 0 0; font-size: 32px; font-weight: bold;">₹0</h2>
                 </div>
                 <div style="text-align: right;">
