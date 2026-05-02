@@ -27,11 +27,11 @@
                 <a href="#collections">Collections</a>
                 <a href="#about">About</a>
                 <a href="#contact">Contact</a>
-                <div id="auth-buttons" style="display: flex; gap: 15px; align-items: center;">
+                <div id="auth-buttons" style="display: flex; gap: 12px; align-items: center;">
                     <a href="pages/user-login.html" class="btn-login" id="login-btn">Sign In</a>
-                    <div id="user-menu" style="display: none;">
-                        <a href="pages/user-dashboard.html" class="btn-login" id="user-name-link" style="color: #d4af37; text-decoration: none;">My Orders</a>
-                        <a href="#" onclick="logoutUser()" class="btn-login" style="color: #d4af37; margin-left: 10px;">Logout</a>
+                    <div id="user-menu" style="display: none; gap: 10px; align-items: center;">
+                        <a href="#" onclick="logoutUser()" class="btn-login menu-action" style="color: #d4af37;">Logout</a>
+                        <a href="pages/user-dashboard.html" class="btn-login menu-action" id="user-name-link" style="color: #d4af37; text-decoration: none;">My Orders</a>
                     </div>
                 </div>
                 <a href="#" class="cart-icon" onclick="toggleCart()"><i class="fas fa-shopping-bag"></i><span id="cart-count">0</span></a>

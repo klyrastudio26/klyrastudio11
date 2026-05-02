@@ -3,6 +3,37 @@ let cart = [];
 let products = [];
 let collections = [];
 
+const defaultProducts = [
+    {
+        name: 'Luminous Pearl Necklace',
+        collection: 'Necklace',
+        price: 2499,
+        description: 'Beautiful pearl necklace with elegant design',
+        image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80'
+    },
+    {
+        name: 'Golden Aura Ring',
+        collection: 'Ring',
+        price: 1799,
+        description: 'Stunning golden ring for special occasions',
+        image: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=800&q=80'
+    },
+    {
+        name: 'Velvet Luxe Bracelet',
+        collection: 'Bracelet',
+        price: 2099,
+        description: 'Premium bracelet with luxury finish',
+        image: 'https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?auto=format&fit=crop&w=800&q=80'
+    },
+    {
+        name: 'Radiant Solitaire Earrings',
+        collection: 'Earrings',
+        price: 1549,
+        description: 'Exquisite earrings with sparkling stones',
+        image: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=800&q=80'
+    }
+];
+
 // Wait for db to be defined globally
 async function waitForDB() {
   let attempts = 0;
@@ -168,6 +199,14 @@ async function loadProducts() {
             });
         });
         
+        if (products.length === 0) {
+            console.log('⚠️ No products found, seeding default catalog...');
+            for (const defaultProduct of defaultProducts) {
+                await db.collection('products').add(defaultProduct);
+            }
+            return await loadProducts();
+        }
+
         console.log('✓ Loaded ' + products.length + ' products:', products);
         displayProducts(products);
     } catch (error) {
@@ -210,8 +249,17 @@ function displayProducts(productsToShow) {
 
     const fallbackImage = 'https://via.placeholder.com/280x250/e8e8e8/999?text=No+Image';
 
+    function normalizeProductImage(image) {
+        if (!image) return fallbackImage;
+        const value = String(image).trim();
+        if (!value) return fallbackImage;
+        if (/^(data:|https?:|\/\/)/i.test(value)) return value;
+        if (value.startsWith('assets/') || value.startsWith('/')) return value;
+        return `assets/${value}`;
+    }
+
     grid.innerHTML = productsToShow.map(product => {
-        const imageSrc = product.image || fallbackImage;
+        const imageSrc = normalizeProductImage(product.image);
         return `
         <div class="product-card">
             <div class="product-image">
