@@ -385,3 +385,5 @@ This project is created for Klyra Studio. All rights reserved.
 - [ ] Bulk product import
 - [ ] Multi-currency support
 - [ ] Search and filters
+#   k l y r a s t u d i o  
+ 
