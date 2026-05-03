@@ -229,21 +229,13 @@ async function loadCollections() {
     try {
         console.log('📦 Loading collections from Supabase...');
 
-        // CRITICAL: ALWAYS use Supabase for public collection data
-        // This ensures all users see the same collections
         if (!window.supabase || typeof window.supabase.from !== 'function') {
-            console.error('❌ CRITICAL: Supabase not available! Collections will not be visible to other users.');
-            document.getElementById('collection-filters').innerHTML = '<span style="color: red;">⚠️ Database connection issue</span>';
-            return;
+            throw new Error('Supabase client is unavailable');
         }
 
         const { data, error } = await window.supabase.from('collections').select('*');
-
         if (error) {
-            console.error('❌ Supabase fetch error:', error);
-            console.error('Error details:', error.message, error.code);
-            document.getElementById('collection-filters').innerHTML = '<span style="color: red;">Error: ' + error.message + '</span>';
-            return;
+            throw error;
         }
 
         collections = data.map(item => ({
@@ -254,7 +246,6 @@ async function loadCollections() {
         }));
 
         console.log('✓ Loaded ' + collections.length + ' collections from Supabase:', collections);
-        console.log('✓ These collections are NOW VISIBLE to ALL USERS across all devices');
 
         let filterHTML = '';
         collections.forEach((collectionData) => {
@@ -263,8 +254,16 @@ async function loadCollections() {
 
         document.getElementById('collection-filters').innerHTML = filterHTML;
     } catch (error) {
-        console.error('❌ Error loading collections:', error);
-        document.getElementById('collection-filters').innerHTML = '<span style="color: red;">Error loading collections</span>';
+        console.warn('⚠️ Supabase collections failed, falling back to local collections:', error);
+        const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
+        collections = localCollections;
+
+        let filterHTML = '';
+        collections.forEach((collectionData) => {
+            filterHTML += `<button class="filter-btn" onclick="filterProducts(event, '${collectionData.name}')">${collectionData.name}</button>`;
+        });
+
+        document.getElementById('collection-filters').innerHTML = filterHTML;
     }
 }
 

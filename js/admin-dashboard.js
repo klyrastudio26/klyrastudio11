@@ -319,7 +319,6 @@ async function loadCollections() {
         if (window.supabase && typeof window.supabase.from === 'function') {
             const { data, error } = await window.supabase.from('collections').select('*');
             if (error) {
-                console.error('❌ Supabase fetch error:', error);
                 throw error;
             }
             querySnapshot = {
@@ -355,8 +354,9 @@ async function loadCollections() {
         });
         console.log('✓ Loaded ' + allCollections.length + ' collections from admin');
     } catch (error) {
-        console.error('❌ Error loading collections:', error);
-        allCollections = [];
+        console.warn('⚠️ Supabase collections failed, fallback to local collections:', error);
+        const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
+        allCollections = localCollections;
     }
 }
 
@@ -422,8 +422,17 @@ document.getElementById('collection-form')?.addEventListener('submit', async (e)
             alert('Collection updated successfully!');
             delete document.getElementById('collection-form').dataset.collectionId;
         } else {
-            await db.collection('collections').add(formData);
-            alert('Collection added successfully!');
+            try {
+                await db.collection('collections').add(formData);
+                alert('Collection added successfully!');
+            } catch (error) {
+                console.warn('⚠️ Supabase insert failed for collections, falling back to localStorage:', error);
+                const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
+                const newCollection = { id: 'local_' + Date.now(), ...formData };
+                localCollections.push(newCollection);
+                localStorage.setItem('collections', JSON.stringify(localCollections));
+                alert('Collection added locally because Supabase failed.');
+            }
         }
         
         closeCollectionModal();
