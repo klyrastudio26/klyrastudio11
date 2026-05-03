@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://ornaknccgxnoegcuptzi.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ybmFrbmNjZ3hub2VnY3VwdHppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MjY1NTcsImV4cCI6MjA5MzMwMjU1N30.Wy19Iwm-tdcApEpMBt1IEn6XWSe9-FvPpZI03feV9DA';
+        window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
 </head>
 <body>
     <div class="checkout-container">

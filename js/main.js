@@ -188,6 +188,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadProducts() {
     try {
         console.log('📦 Loading products from db...');
+        console.log('🔍 Checking if Supabase is available...');
+        
         const querySnapshot = await db.collection('products').get();
         console.log('✓ Got query snapshot:', querySnapshot);
         
@@ -199,15 +201,12 @@ async function loadProducts() {
             });
         });
         
-        if (products.length === 0) {
-            console.log('⚠️ No products found, seeding default catalog...');
-            for (const defaultProduct of defaultProducts) {
-                await db.collection('products').add(defaultProduct);
-            }
-            return await loadProducts();
-        }
-
         console.log('✓ Loaded ' + products.length + ' products:', products);
+        
+        if (products.length === 0) {
+            console.log('⚠️ No products found in database');
+        }
+        
         displayProducts(products);
     } catch (error) {
         console.error('❌ Error loading products:', error);
