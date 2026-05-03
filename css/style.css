@@ -32,6 +32,24 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
+}
+
+/* Cart button outside menu - always visible */
+.navbar .cart-icon {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    color: #d4af37 !important;
+    text-decoration: none !important;
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    z-index: 1001;
+}
+
+.navbar .cart-icon:hover {
+    color: #e8c547 !important;
 }
 
 .logo {
@@ -68,10 +86,18 @@ body {
     font-size: 24px;
     cursor: pointer;
     padding: 8px;
+    z-index: 1002;
+    order: 2;
 }
 
 .menu-toggle i {
     display: block;
+}
+
+/* Make sure nav-links are contained properly */
+.logo {
+    order: 1;
+    flex: 1;
 }
 
 

@@ -187,58 +187,41 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ===== PRODUCT FUNCTIONS ======
 async function loadProducts() {
     try {
-        console.log('📦 Loading products from db...');
-        console.log('🔍 Checking if Supabase is available...');
+        console.log('📦 Loading products from Supabase (REQUIRED for all users to see)...');
         
-        let querySnapshot;
-        if (window.supabase && typeof window.supabase.from === 'function') {
-            const { data, error } = await window.supabase.from('products').select('*');
-            if (error) {
-                console.error('❌ Supabase fetch error:', error);
-                throw error;
-            }
-            querySnapshot = {
-                docs: data.map(item => ({
-                    id: item.id,
-                    data: () => {
-                        const copy = { ...item };
-                        delete copy.id;
-                        return copy;
-                    }
-                })),
-                forEach: callback => data.forEach(item => callback({
-                    id: item.id,
-                    data: () => {
-                        const copy = { ...item };
-                        delete copy.id;
-                        return copy;
-                    }
-                }))
-            };
-            console.log('✓ Fetched', data.length, 'products from Supabase');
-        } else {
-            querySnapshot = await db.collection('products').get();
-            console.log('✓ Got query snapshot:', querySnapshot);
+        // CRITICAL: ALWAYS use Supabase for public product data
+        // This ensures all users see the same products
+        if (!window.supabase || typeof window.supabase.from !== 'function') {
+            console.error('❌ CRITICAL: Supabase not available! Products will not be visible to other users.');
+            document.getElementById('products-grid').innerHTML = '<div class="loading" style="color: red;">⚠️ Database connection issue. Please refresh the page.</div>';
+            return;
         }
         
-        products = [];
-        querySnapshot.forEach((doc) => {
-            products.push({
-                id: doc.id,
-                ...doc.data()
-            });
-        });
+        const { data, error } = await window.supabase.from('products').select('*').order('createdAt', { ascending: false });
         
-        console.log('✓ Loaded ' + products.length + ' products:', products);
-        
-        if (products.length === 0) {
-            console.log('⚠️ No products found in database');
+        if (error) {
+            console.error('❌ Supabase fetch error:', error);
+            console.error('Error details:', error.message, error.code);
+            document.getElementById('products-grid').innerHTML = '<div class="loading" style="color: red;">Error: ' + error.message + '</div>';
+            return;
         }
+        
+        products = data.map(item => ({
+            id: item.id,
+            name: item.name,
+            collection: item.collection,
+            price: item.price,
+            description: item.description,
+            image: item.image || 'https://via.placeholder.com/280x250'
+        }));
+        
+        console.log('✓ Loaded ' + products.length + ' products from Supabase:', products);
+        console.log('✓ These products are NOW VISIBLE to ALL USERS across all devices');
         
         displayProducts(products);
     } catch (error) {
         console.error('❌ Error loading products:', error);
-        document.getElementById('products-grid').innerHTML = '<div class="loading">Error loading products: ' + error.message + '</div>';
+        document.getElementById('products-grid').innerHTML = '<div class="loading" style="color: red;">Error loading products: ' + error.message + '</div>';
     }
 }
 
