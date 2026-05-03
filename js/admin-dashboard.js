@@ -251,12 +251,31 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
         };
 
         if (window.supabase && typeof window.supabase.from === 'function') {
-            const { data: result, error } = await window.supabase.from('products').insert(productPayload, { returning: 'minimal' });
-            if (error) {
-                console.error('❌ Supabase insert error:', error);
-                throw error;
+            const response = await fetch(`${supabaseUrl}/rest/v1/products`, {
+                method: 'POST',
+                headers: {
+                    apikey: supabaseKey,
+                    Authorization: `Bearer ${supabaseKey}`,
+                    'Content-Type': 'application/json',
+                    Prefer: 'return=minimal'
+                },
+                body: JSON.stringify(productPayload)
+            });
+
+            const responseText = await response.text();
+            let responseBody;
+            try {
+                responseBody = responseText ? JSON.parse(responseText) : null;
+            } catch (parseError) {
+                responseBody = { message: responseText };
             }
-            console.log('✓ Product inserted into Supabase', result ? result : '(minimal return)');
+
+            if (!response.ok) {
+                console.error('❌ Supabase REST insert error:', response.status, response.statusText, responseBody);
+                throw new Error(responseBody.message || response.statusText);
+            }
+
+            console.log('✓ Product inserted into Supabase REST with minimal return');
         } else {
             await db.collection('products').add(productPayload);
             console.log('⚠️ Product saved to local fallback storage because Supabase was not ready');
