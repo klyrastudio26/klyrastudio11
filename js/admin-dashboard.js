@@ -313,16 +313,13 @@ function closeProductModal() {
 // ===== COLLECTIONS MANAGEMENT =====
 async function loadCollections() {
     try {
-        const querySnapshot = await db.collection('collections').get();
-        allCollections = [];
-        querySnapshot.forEach((doc) => {
-            allCollections.push({
-                id: doc.id,
-                ...doc.data()
-            });
-        });
+        // Only load from IndexedDB/localStorage to avoid Supabase schema errors
+        const collections = JSON.parse(localStorage.getItem('collections') || '[]');
+        allCollections = collections;
+        console.log('✓ Loaded collections from localStorage:', allCollections.length);
     } catch (error) {
         console.error('Error loading collections:', error);
+        allCollections = [];
     }
 }
 

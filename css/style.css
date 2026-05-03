@@ -32,7 +32,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
+    gap: 6px;
 }
 
 /* Cart button outside menu - always visible */
@@ -132,11 +132,15 @@ body {
     padding: 8px 12px;
 }
 
-.nav-links.open #auth-buttons {
-    display: flex;
+#auth-buttons {
+    display: none;
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
+}
+
+.nav-links.open #auth-buttons {
+    display: flex;
 }
 
 .nav-links.open #auth-buttons > a,

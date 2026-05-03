@@ -227,20 +227,15 @@ async function loadProducts() {
 
 async function loadCollections() {
     try {
-        const querySnapshot = await db.collection('collections').get();
-        collections = [];
+        // Only load from IndexedDB/localStorage to avoid Supabase schema errors
+        const collections_data = JSON.parse(localStorage.getItem('collections') || '[]');
+        collections = collections_data;
         let filterHTML = '';
-        querySnapshot.forEach((doc) => {
-            const collectionData = doc.data();
-            collections.push({
-                id: doc.id,
-                ...collectionData
-            });
+        collections.forEach((collectionData) => {
             filterHTML += `<button class="filter-btn" onclick="filterProducts(event, '${collectionData.name}')">${collectionData.name}</button>`;
         });
         
-        console.log('Loaded collections:', collections);
-        
+        console.log('✓ Loaded collections:', collections);
         document.getElementById('collection-filters').innerHTML = filterHTML;
     } catch (error) {
         console.error('Error loading collections:', error);
