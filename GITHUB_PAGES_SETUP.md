@@ -56,24 +56,68 @@ CREATE POLICY "Authenticated users can delete products" ON products
     USING (true);
 ```
 
-### 3. Create "collections" Table (Optional)
-If you want to manage collections in Supabase instead of locally:
+### 3. Create "collections" Table (Required for shared collections)
+If you get "policy already exists" error, the table might already exist. Try this alternative:
 
+**First, check if table exists:**
 ```sql
-CREATE TABLE IF NOT EXISTS collections (
+SELECT * FROM collections LIMIT 1;
+```
+
+**If table doesn't exist, create it:**
+```sql
+CREATE TABLE collections (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
     description TEXT,
-    image TEXT
+    image TEXT,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE collections ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Collections are public" ON collections FOR SELECT TO public USING (true);
-CREATE POLICY "Authenticated users can insert" ON collections FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Collections are public" ON collections
+    FOR SELECT TO public
+    USING (true);
+
+CREATE POLICY "Authenticated users can insert collections" ON collections
+    FOR INSERT TO authenticated
+    WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can update collections" ON collections
+    FOR UPDATE TO authenticated
+    WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can delete collections" ON collections
+    FOR DELETE TO authenticated
+    USING (true);
 ```
 
-**NOTE:** Currently collections are stored locally (localStorage). If you create this table, you can migrate to Supabase later.
+**If table exists but policies are missing:**
+```sql
+-- Enable RLS if not already enabled
+ALTER TABLE collections ENABLE ROW LEVEL SECURITY;
+
+-- Add missing policies (skip if they exist)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Collections are public') THEN
+        CREATE POLICY "Collections are public" ON collections FOR SELECT TO public USING (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Authenticated users can insert collections') THEN
+        CREATE POLICY "Authenticated users can insert collections" ON collections FOR INSERT TO authenticated WITH CHECK (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Authenticated users can update collections') THEN
+        CREATE POLICY "Authenticated users can update collections" ON collections FOR UPDATE TO authenticated WITH CHECK (true);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Authenticated users can delete collections') THEN
+        CREATE POLICY "Authenticated users can delete collections" ON collections FOR DELETE TO authenticated USING (true);
+    END IF;
+END $$;
+```
 
 ### 4. Create "orders" Table (Optional but recommended)
 ```sql
