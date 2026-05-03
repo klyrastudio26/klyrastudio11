@@ -251,12 +251,12 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
         };
 
         if (window.supabase && typeof window.supabase.from === 'function') {
-            const { data: result, error } = await window.supabase.from('products').insert(productPayload);
+            const { data: result, error } = await window.supabase.from('products').insert(productPayload, { returning: 'minimal' });
             if (error) {
                 console.error('❌ Supabase insert error:', error);
                 throw error;
             }
-            console.log('✓ Product inserted into Supabase:', result);
+            console.log('✓ Product inserted into Supabase', result ? result : '(minimal return)');
         } else {
             await db.collection('products').add(productPayload);
             console.log('⚠️ Product saved to local fallback storage because Supabase was not ready');

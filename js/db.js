@@ -11,13 +11,13 @@ class SupabaseCollection {
   }
 
   async add(data) {
-    const { data: result, error } = await window.supabase.from(this.table).insert(data).select().single();
+    const { data: result, error } = await window.supabase.from(this.table).insert(data, { returning: 'minimal' });
     if (error) {
       console.error('❌ Supabase error adding to', this.table, ':', error);
       throw error;
     }
-    console.log('✓ Added item to Supabase table:', this.table, 'ID:', result.id);
-    return { id: result.id, data: () => data };
+    console.log('✓ Added item to Supabase table:', this.table, '(minimal return)');
+    return { id: null, data: () => data };
   }
 
   doc(id) {
