@@ -189,13 +189,26 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
     try {
         let imageData = 'https://via.placeholder.com/280x250';
         
-        // Convert image file to base64
+        // Handle image upload
         if (imageFile) {
-            imageData = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.readAsDataURL(imageFile);
-            });
+            if (window.supabase) {
+                // Upload to Supabase Storage
+                const fileExt = imageFile.name.split('.').pop();
+                const fileName = `${Date.now()}.${fileExt}`;
+                const { data, error } = await window.supabase.storage.from('products').upload(fileName, imageFile);
+                if (error) throw error;
+                const { data: urlData } = window.supabase.storage.from('products').getPublicUrl(fileName);
+                imageData = urlData.publicUrl;
+                console.log('✓ Image uploaded to Supabase Storage:', imageData);
+            } else {
+                // Fallback to base64 for local storage
+                imageData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(imageFile);
+                });
+                console.log('✓ Image converted to base64');
+            }
         }
         
         console.log('📝 Adding product:', name, 'to collection:', collection);

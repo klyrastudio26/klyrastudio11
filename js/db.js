@@ -1,3 +1,120 @@
+// Supabase integration
+// Check dynamically each time instead of once at load time
+function isSupabaseReady() {
+  return typeof window !== 'undefined' && window.supabase && window.supabase._isInitialized !== false;
+}
+
+// Supabase classes if available
+class SupabaseCollection {
+  constructor(name) {
+    this.table = name;
+  }
+
+  async add(data) {
+    const { data: result, error } = await window.supabase.from(this.table).insert(data).select().single();
+    if (error) {
+      console.error('❌ Supabase error adding to', this.table, ':', error);
+      throw error;
+    }
+    console.log('✓ Added item to Supabase table:', this.table, 'ID:', result.id);
+    return { id: result.id, data: () => data };
+  }
+
+  doc(id) {
+    return new SupabaseDocument(this.table, id);
+  }
+
+  async get() {
+    const { data, error } = await window.supabase.from(this.table).select('*');
+    if (error) {
+      console.error('❌ Supabase error fetching from', this.table, ':', error);
+      throw error;
+    }
+    console.log('✓ Fetched', data.length, 'items from Supabase table:', this.table);
+    const docs = data.map(item => ({
+      id: item.id,
+      data: () => {
+        const copy = { ...item };
+        delete copy.id;
+        return copy;
+      }
+    }));
+    return {
+      empty: docs.length === 0,
+      forEach: (callback) => docs.forEach(callback),
+      docs: docs
+    };
+  }
+
+  where(field, operator, value) {
+    return new SupabaseQuery(this.table, field, operator, value);
+  }
+}
+
+class SupabaseDocument {
+  constructor(table, docId) {
+    this.table = table;
+    this.docId = docId;
+  }
+
+  async set(data) {
+    const { error } = await window.supabase.from(this.table).upsert({ id: this.docId, ...data });
+    if (error) throw error;
+  }
+
+  async update(data) {
+    const { error } = await window.supabase.from(this.table).update(data).eq('id', this.docId);
+    if (error) throw error;
+  }
+
+  async delete() {
+    const { error } = await window.supabase.from(this.table).delete().eq('id', this.docId);
+    if (error) throw error;
+  }
+
+  async get() {
+    const { data, error } = await window.supabase.from(this.table).select('*').eq('id', this.docId).single();
+    if (error) {
+      if (error.code === 'PGRST116') return null; // Not found
+      throw error;
+    }
+    const copy = { ...data };
+    delete copy.id;
+    return copy;
+  }
+}
+
+class SupabaseQuery {
+  constructor(table, field, operator, value) {
+    this.table = table;
+    this.field = field;
+    this.operator = operator;
+    this.value = value;
+  }
+
+  async get() {
+    let query = window.supabase.from(this.table).select('*');
+    if (this.operator === '==') {
+      query = query.eq(this.field, this.value);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    const docs = data.map(item => ({
+      id: item.id,
+      data: () => {
+        const copy = { ...item };
+        delete copy.id;
+        return copy;
+      }
+    }));
+    return {
+      empty: docs.length === 0,
+      forEach: (callback) => docs.forEach(callback),
+      docs: docs
+    };
+  }
+}
+
 // Hybrid DB System: IndexedDB with localStorage fallback
 // Automatically uses IndexedDB for large data, falls back to localStorage if needed
 
@@ -64,6 +181,11 @@ class SimpleDB {
   }
 
   collection(name) {
+    if (isSupabaseReady()) {
+      console.log('✓ Using Supabase for collection:', name);
+      return new SupabaseCollection(name);
+    }
+    console.log('⚠️ Using local storage for collection:', name);
     return new LocalCollection(name, this.db, this.initPromise, this.useIndexedDB);
   }
 }
