@@ -87,17 +87,17 @@ body {
     cursor: pointer;
     padding: 8px;
     z-index: 1002;
-    order: 2;
+    order: 3;
 }
 
 .menu-toggle i {
     display: block;
 }
 
-/* Make sure nav-links are contained properly */
-.logo {
-    order: 1;
-    flex: 1;
+/* Cart button - left side */
+.navbar .cart-icon {
+    order: 2;
+}
 }
 
 

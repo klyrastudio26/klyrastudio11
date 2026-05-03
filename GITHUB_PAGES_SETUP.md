@@ -44,6 +44,16 @@ CREATE POLICY "Products are public" ON products
 CREATE POLICY "Authenticated users can insert products" ON products
     FOR INSERT TO authenticated
     WITH CHECK (true);
+
+-- Allow authenticated users to update products
+CREATE POLICY "Authenticated users can update products" ON products
+    FOR UPDATE TO authenticated
+    WITH CHECK (true);
+
+-- Allow authenticated users to delete products
+CREATE POLICY "Authenticated users can delete products" ON products
+    FOR DELETE TO authenticated
+    USING (true);
 ```
 
 ### 3. Create "orders" Table (Optional but recommended)

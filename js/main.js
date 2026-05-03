@@ -197,7 +197,7 @@ async function loadProducts() {
             return;
         }
         
-        const { data, error } = await window.supabase.from('products').select('*').order('createdAt', { ascending: false });
+        const { data, error } = await window.supabase.from('products').select('*');
         
         if (error) {
             console.error('❌ Supabase fetch error:', error);
