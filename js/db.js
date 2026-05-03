@@ -181,13 +181,6 @@ class SimpleDB {
   }
 
   collection(name) {
-    // NEVER use Supabase for collections table - it has schema issues
-    // Always use local storage for collections
-    if (name === 'collections') {
-      console.log('⚠️ Using localStorage for collections (Supabase schema issue)');
-      return new LocalCollection(name, this.db, this.initPromise, this.useIndexedDB);
-    }
-    
     const supabaseReady = isSupabaseReady();
     console.log(supabaseReady ? '✓ Using Supabase for collection:' : '⚠️ Supabase not ready, using local storage for collection:', name);
     if (supabaseReady) {

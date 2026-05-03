@@ -227,18 +227,44 @@ async function loadProducts() {
 
 async function loadCollections() {
     try {
-        // Only load from IndexedDB/localStorage to avoid Supabase schema errors
-        const collections_data = JSON.parse(localStorage.getItem('collections') || '[]');
-        collections = collections_data;
+        console.log('📦 Loading collections from Supabase...');
+
+        // CRITICAL: ALWAYS use Supabase for public collection data
+        // This ensures all users see the same collections
+        if (!window.supabase || typeof window.supabase.from !== 'function') {
+            console.error('❌ CRITICAL: Supabase not available! Collections will not be visible to other users.');
+            document.getElementById('collection-filters').innerHTML = '<span style="color: red;">⚠️ Database connection issue</span>';
+            return;
+        }
+
+        const { data, error } = await window.supabase.from('collections').select('*');
+
+        if (error) {
+            console.error('❌ Supabase fetch error:', error);
+            console.error('Error details:', error.message, error.code);
+            document.getElementById('collection-filters').innerHTML = '<span style="color: red;">Error: ' + error.message + '</span>';
+            return;
+        }
+
+        collections = data.map(item => ({
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            image: item.image || 'https://via.placeholder.com/200x150'
+        }));
+
+        console.log('✓ Loaded ' + collections.length + ' collections from Supabase:', collections);
+        console.log('✓ These collections are NOW VISIBLE to ALL USERS across all devices');
+
         let filterHTML = '';
         collections.forEach((collectionData) => {
             filterHTML += `<button class="filter-btn" onclick="filterProducts(event, '${collectionData.name}')">${collectionData.name}</button>`;
         });
-        
-        console.log('✓ Loaded collections:', collections);
+
         document.getElementById('collection-filters').innerHTML = filterHTML;
     } catch (error) {
-        console.error('Error loading collections:', error);
+        console.error('❌ Error loading collections:', error);
+        document.getElementById('collection-filters').innerHTML = '<span style="color: red;">Error loading collections</span>';
     }
 }
 

@@ -313,12 +313,49 @@ function closeProductModal() {
 // ===== COLLECTIONS MANAGEMENT =====
 async function loadCollections() {
     try {
-        // Only load from IndexedDB/localStorage to avoid Supabase schema errors
-        const collections = JSON.parse(localStorage.getItem('collections') || '[]');
-        allCollections = collections;
-        console.log('✓ Loaded collections from localStorage:', allCollections.length);
+        console.log('📦 Admin: Loading collections...');
+        let querySnapshot;
+
+        if (window.supabase && typeof window.supabase.from === 'function') {
+            const { data, error } = await window.supabase.from('collections').select('*');
+            if (error) {
+                console.error('❌ Supabase fetch error:', error);
+                throw error;
+            }
+            querySnapshot = {
+                docs: data.map(item => ({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                })),
+                forEach: callback => data.forEach(item => callback({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                }))
+            };
+            console.log('✓ Fetched', data.length, 'collections from Supabase');
+        } else {
+            querySnapshot = await db.collection('collections').get();
+            console.log('✓ Got query snapshot, docs count:', querySnapshot.docs ? querySnapshot.docs.length : 'unknown');
+        }
+
+        allCollections = [];
+        querySnapshot.forEach((doc) => {
+            allCollections.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        console.log('✓ Loaded ' + allCollections.length + ' collections from admin');
     } catch (error) {
-        console.error('Error loading collections:', error);
+        console.error('❌ Error loading collections:', error);
         allCollections = [];
     }
 }
