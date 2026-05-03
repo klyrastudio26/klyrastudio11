@@ -413,8 +413,7 @@ document.getElementById('collection-form')?.addEventListener('submit', async (e)
         const formData = {
             name,
             description,
-            image: imageData,
-            createdAt: new Date().toISOString()
+            image: imageData
         };
         
         if (document.getElementById('collection-form').dataset.collectionId) {
