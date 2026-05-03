@@ -56,7 +56,26 @@ CREATE POLICY "Authenticated users can delete products" ON products
     USING (true);
 ```
 
-### 3. Create "orders" Table (Optional but recommended)
+### 3. Create "collections" Table (Optional)
+If you want to manage collections in Supabase instead of locally:
+
+```sql
+CREATE TABLE IF NOT EXISTS collections (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name TEXT NOT NULL,
+    description TEXT,
+    image TEXT
+);
+
+ALTER TABLE collections ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Collections are public" ON collections FOR SELECT TO public USING (true);
+CREATE POLICY "Authenticated users can insert" ON collections FOR INSERT TO authenticated WITH CHECK (true);
+```
+
+**NOTE:** Currently collections are stored locally (localStorage). If you create this table, you can migrate to Supabase later.
+
+### 4. Create "orders" Table (Optional but recommended)
 ```sql
 CREATE TABLE IF NOT EXISTS orders (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
