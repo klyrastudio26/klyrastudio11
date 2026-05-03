@@ -40,19 +40,19 @@ CREATE POLICY "Products are public" ON products
     FOR SELECT TO public
     USING (true);
 
--- Allow authenticated users to insert products
-CREATE POLICY "Authenticated users can insert products" ON products
-    FOR INSERT TO authenticated
+-- Allow anyone to insert products using the anon key
+CREATE POLICY "Products are public insert" ON products
+    FOR INSERT TO public
     WITH CHECK (true);
 
--- Allow authenticated users to update products
-CREATE POLICY "Authenticated users can update products" ON products
-    FOR UPDATE TO authenticated
+-- Allow anyone to update products using the anon key
+CREATE POLICY "Products are public update" ON products
+    FOR UPDATE TO public
     WITH CHECK (true);
 
--- Allow authenticated users to delete products
-CREATE POLICY "Authenticated users can delete products" ON products
-    FOR DELETE TO authenticated
+-- Allow anyone to delete products using the anon key
+CREATE POLICY "Products are public delete" ON products
+    FOR DELETE TO public
     USING (true);
 ```
 
@@ -80,16 +80,16 @@ CREATE POLICY "Collections are public" ON collections
     FOR SELECT TO public
     USING (true);
 
-CREATE POLICY "Authenticated users can insert collections" ON collections
-    FOR INSERT TO authenticated
+CREATE POLICY "Collections are public insert" ON collections
+    FOR INSERT TO public
     WITH CHECK (true);
 
-CREATE POLICY "Authenticated users can update collections" ON collections
-    FOR UPDATE TO authenticated
+CREATE POLICY "Collections are public update" ON collections
+    FOR UPDATE TO public
     WITH CHECK (true);
 
-CREATE POLICY "Authenticated users can delete collections" ON collections
-    FOR DELETE TO authenticated
+CREATE POLICY "Collections are public delete" ON collections
+    FOR DELETE TO public
     USING (true);
 ```
 
