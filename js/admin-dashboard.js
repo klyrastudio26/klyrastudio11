@@ -247,8 +247,7 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
             collection,
             price,
             description,
-            image: imageData,
-            createdAt: new Date().toISOString()
+            image: imageData
         };
 
         if (window.supabase && typeof window.supabase.from === 'function') {
