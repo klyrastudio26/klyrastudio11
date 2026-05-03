@@ -124,8 +124,37 @@ function switchTab(tabName) {
 async function loadProducts() {
     try {
         console.log('📦 Admin: Loading products...');
-        const querySnapshot = await db.collection('products').get();
-        console.log('✓ Got query snapshot, docs count:', querySnapshot.docs ? querySnapshot.docs.length : 'unknown');
+        let querySnapshot;
+
+        if (window.supabase && typeof window.supabase.from === 'function') {
+            const { data, error } = await window.supabase.from('products').select('*');
+            if (error) {
+                console.error('❌ Supabase fetch error:', error);
+                throw error;
+            }
+            querySnapshot = {
+                docs: data.map(item => ({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                })),
+                forEach: callback => data.forEach(item => callback({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                }))
+            };
+            console.log('✓ Fetched', data.length, 'products from Supabase');
+        } else {
+            querySnapshot = await db.collection('products').get();
+            console.log('✓ Got query snapshot, docs count:', querySnapshot.docs ? querySnapshot.docs.length : 'unknown');
+        }
         
         allProducts = [];
         querySnapshot.forEach((doc) => {
@@ -212,17 +241,28 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
         }
         
         console.log('📝 Adding product:', name, 'to collection:', collection);
-        
-        await db.collection('products').add({
+        console.log('🧪 Supabase object present:', !!window.supabase, 'from function:', typeof window.supabase?.from);
+        const productPayload = {
             name,
             collection,
             price,
             description,
             image: imageData,
             createdAt: new Date().toISOString()
-        });
+        };
+
+        if (window.supabase && typeof window.supabase.from === 'function') {
+            const { data: result, error } = await window.supabase.from('products').insert(productPayload).select().single();
+            if (error) {
+                console.error('❌ Supabase insert error:', error);
+                throw error;
+            }
+            console.log('✓ Product inserted into Supabase:', result);
+        } else {
+            await db.collection('products').add(productPayload);
+            console.log('⚠️ Product saved to local fallback storage because Supabase was not ready');
+        }
         
-        console.log('✓ Product saved to IndexedDB');
         alert('✓ Product added successfully!');
         closeProductModal();
         await loadProducts();

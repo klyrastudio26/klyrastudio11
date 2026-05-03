@@ -1,7 +1,7 @@
 // Supabase integration
 // Check dynamically each time instead of once at load time
 function isSupabaseReady() {
-  return typeof window !== 'undefined' && window.supabase && window.supabase._isInitialized !== false;
+  return typeof window !== 'undefined' && window.supabase && typeof window.supabase.from === 'function';
 }
 
 // Supabase classes if available
@@ -181,11 +181,11 @@ class SimpleDB {
   }
 
   collection(name) {
-    if (isSupabaseReady()) {
-      console.log('✓ Using Supabase for collection:', name);
+    const supabaseReady = isSupabaseReady();
+    console.log(supabaseReady ? '✓ Using Supabase for collection:' : '⚠️ Supabase not ready, using local storage for collection:', name);
+    if (supabaseReady) {
       return new SupabaseCollection(name);
     }
-    console.log('⚠️ Using local storage for collection:', name);
     return new LocalCollection(name, this.db, this.initPromise, this.useIndexedDB);
   }
 }

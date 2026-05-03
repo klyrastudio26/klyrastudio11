@@ -190,8 +190,36 @@ async function loadProducts() {
         console.log('📦 Loading products from db...');
         console.log('🔍 Checking if Supabase is available...');
         
-        const querySnapshot = await db.collection('products').get();
-        console.log('✓ Got query snapshot:', querySnapshot);
+        let querySnapshot;
+        if (window.supabase && typeof window.supabase.from === 'function') {
+            const { data, error } = await window.supabase.from('products').select('*');
+            if (error) {
+                console.error('❌ Supabase fetch error:', error);
+                throw error;
+            }
+            querySnapshot = {
+                docs: data.map(item => ({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                })),
+                forEach: callback => data.forEach(item => callback({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                }))
+            };
+            console.log('✓ Fetched', data.length, 'products from Supabase');
+        } else {
+            querySnapshot = await db.collection('products').get();
+            console.log('✓ Got query snapshot:', querySnapshot);
+        }
         
         products = [];
         querySnapshot.forEach((doc) => {
