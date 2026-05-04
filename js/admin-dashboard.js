@@ -34,15 +34,27 @@ async function waitForDB() {
 
 // Check admin authentication on page load
 window.addEventListener('load', async () => {
-    const adminSession = localStorage.getItem('admin_session');
-    if (!adminSession) {
+    if (!window.supabase || typeof window.supabase.auth?.getSession !== 'function') {
+        console.error('Supabase auth not available');
         window.location.href = 'admin-login.html';
         return;
     }
-    
-    const adminName = localStorage.getItem('admin_username');
-    document.getElementById('admin-name').textContent = adminName || 'Admin';
-    
+
+    const { data, error } = await window.supabase.auth.getSession();
+    if (error) {
+        console.error('Supabase auth session error:', error);
+        window.location.href = 'admin-login.html';
+        return;
+    }
+
+    const session = data?.session;
+    if (!session || session.user?.user_metadata?.username !== ADMIN_USERNAME) {
+        window.location.href = 'admin-login.html';
+        return;
+    }
+
+    const adminName = session.user.user_metadata?.username || session.user.email || 'Admin';
+    document.getElementById('admin-name').textContent = adminName;
     await loadDashboardData();
 });
 
@@ -203,6 +215,8 @@ function showAddProductModal() {
         allCollections.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
     
     document.getElementById('product-form').reset();
+    document.querySelector('#product-modal h2').textContent = 'Add Product';
+    delete document.getElementById('product-form').dataset.productId;
     document.getElementById('product-modal').classList.add('show');
 }
 
@@ -214,14 +228,17 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
     const price = parseFloat(document.getElementById('product-price').value);
     const description = document.getElementById('product-description').value;
     const imageFile = document.getElementById('product-image').files[0];
+    const existingProductId = document.getElementById('product-form').dataset.productId;
     
     try {
         let imageData = 'https://via.placeholder.com/280x250';
+        if (existingProductId) {
+            imageData = document.getElementById('product-image-url').value || imageData;
+        }
         
-        // Handle image upload
+        // Handle image upload if a new file is selected
         if (imageFile) {
             if (window.supabase) {
-                // Upload to Supabase Storage
                 const fileExt = imageFile.name.split('.').pop();
                 const fileName = `${Date.now()}.${fileExt}`;
                 const { data, error } = await window.supabase.storage.from('products').upload(fileName, imageFile);
@@ -230,7 +247,6 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
                 imageData = urlData.publicUrl;
                 console.log('✓ Image uploaded to Supabase Storage:', imageData);
             } else {
-                // Fallback to base64 for local storage
                 imageData = await new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onload = (e) => resolve(e.target.result);
@@ -240,8 +256,6 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
             }
         }
         
-        console.log('📝 Adding product:', name, 'to collection:', collection);
-        console.log('🧪 Supabase object present:', !!window.supabase, 'from function:', typeof window.supabase?.from);
         const productPayload = {
             name,
             collection,
@@ -251,51 +265,47 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
         };
 
         if (window.supabase && typeof window.supabase.from === 'function') {
-            const response = await fetch(`${supabaseUrl}/rest/v1/products`, {
-                method: 'POST',
-                headers: {
-                    apikey: supabaseKey,
-                    Authorization: `Bearer ${supabaseKey}`,
-                    'Content-Type': 'application/json',
-                    Prefer: 'return=minimal'
-                },
-                body: JSON.stringify(productPayload)
-            });
-
-            const responseText = await response.text();
-            let responseBody;
-            try {
-                responseBody = responseText ? JSON.parse(responseText) : null;
-            } catch (parseError) {
-                responseBody = { message: responseText };
+            if (existingProductId) {
+                const { data, error } = await window.supabase.from('products').update(productPayload).eq('id', existingProductId);
+                if (error) throw error;
+                console.log('✓ Product updated in Supabase with authenticated session');
+            } else {
+                const { data, error } = await window.supabase.from('products').insert(productPayload, { returning: 'minimal' });
+                if (error) throw error;
+                console.log('✓ Product inserted into Supabase with authenticated session');
             }
-
-            if (!response.ok) {
-                console.error('❌ Supabase REST insert error:', response.status, response.statusText, responseBody);
-                throw new Error(responseBody.message || response.statusText);
-            }
-
-            console.log('✓ Product inserted into Supabase REST with minimal return');
         } else {
-            await db.collection('products').add(productPayload);
+            if (existingProductId) {
+                await db.collection('products').doc(existingProductId).update(productPayload);
+            } else {
+                await db.collection('products').add(productPayload);
+            }
             console.log('⚠️ Product saved to local fallback storage because Supabase was not ready');
         }
         
-        alert('✓ Product added successfully!');
+        alert(existingProductId ? '✓ Product updated successfully!' : '✓ Product added successfully!');
         closeProductModal();
         await loadProducts();
         displayProducts();
         console.log('✓ Product display updated');
     } catch (error) {
-        console.error('❌ Error adding product:', error);
-        alert('❌ Error adding product: ' + error.message);
+        console.error('❌ Error saving product:', error);
+        alert('❌ Error saving product: ' + error.message);
     }
 });
 
 async function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product?')) {
         try {
-            await db.collection('products').doc(productId).delete();
+            if (window.supabase && typeof window.supabase.from === 'function') {
+                const { error } = await window.supabase.from('products').delete().eq('id', productId);
+                if (error) throw error;
+                console.log('✓ Product deleted from Supabase with authenticated session');
+            } else {
+                await db.collection('products').doc(productId).delete();
+                console.log('⚠️ Product deleted from local fallback storage');
+            }
+
             alert('Product deleted successfully!');
             await loadProducts();
             displayProducts();
@@ -314,18 +324,23 @@ async function editProduct(productId) {
     document.getElementById('product-price').value = product.price;
     document.getElementById('product-description').value = product.description || '';
     document.getElementById('product-image-url').value = product.image || '';
+    document.getElementById('product-image').value = '';
     
-    // Store current product ID for update
-    document.getElementById('product-form').dataset.productId = productId;
+    const form = document.getElementById('product-form');
+    form.dataset.productId = productId;
     document.querySelector('#product-modal h2').textContent = 'Edit Product';
+    document.getElementById('product-submit-button').textContent = 'Save Product';
     
     document.getElementById('product-modal').classList.add('show');
 }
 
 function closeProductModal() {
     document.getElementById('product-modal').classList.remove('show');
-    delete document.getElementById('product-form').dataset.productId;
+    const form = document.getElementById('product-form');
+    delete form.dataset.productId;
     document.querySelector('#product-modal h2').textContent = 'Add Product';
+    document.getElementById('product-submit-button').textContent = 'Add Product';
+    document.getElementById('product-image-url').value = '';
 }
 
 // ===== COLLECTIONS MANAGEMENT =====
@@ -436,12 +451,61 @@ document.getElementById('collection-form')?.addEventListener('submit', async (e)
         
         if (document.getElementById('collection-form').dataset.collectionId) {
             const collectionId = document.getElementById('collection-form').dataset.collectionId;
-            await db.collection('collections').doc(collectionId).update(formData);
+            
+            // Get current authenticated session
+            const { data: sessionData, error: sessionError } = await window.supabase.auth.getSession();
+            if (sessionError || !sessionData.session) {
+                throw new Error('Admin authentication required. Please log in again.');
+            }
+            
+            const accessToken = sessionData.session.access_token;
+            
+            const response = await fetch(`${supabaseUrl}/rest/v1/collections?id=eq.${encodeURIComponent(collectionId)}`, {
+                method: 'PATCH',
+                headers: {
+                    apikey: supabaseKey,
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                    Prefer: 'return=minimal'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Supabase update failed: ${response.status} ${errorText}`);
+            }
+
+            console.log('✓ Collection updated in Supabase with authenticated session');
             alert('Collection updated successfully!');
             delete document.getElementById('collection-form').dataset.collectionId;
         } else {
             try {
-                await db.collection('collections').add(formData);
+                // Get current authenticated session
+                const { data: sessionData, error: sessionError } = await window.supabase.auth.getSession();
+                if (sessionError || !sessionData.session) {
+                    throw new Error('Admin authentication required. Please log in again.');
+                }
+                
+                const accessToken = sessionData.session.access_token;
+                
+                const response = await fetch(`${supabaseUrl}/rest/v1/collections`, {
+                    method: 'POST',
+                    headers: {
+                        apikey: supabaseKey,
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                        Prefer: 'return=minimal'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Supabase insert failed: ${response.status} ${errorText}`);
+                }
+
+                console.log('✓ Collection inserted into Supabase with authenticated session');
                 alert('Collection added successfully!');
             } catch (error) {
                 console.warn('⚠️ Supabase insert failed for collections, falling back to localStorage:', error);
@@ -464,7 +528,29 @@ document.getElementById('collection-form')?.addEventListener('submit', async (e)
 async function deleteCollection(collectionId) {
     if (confirm('Are you sure you want to delete this collection?')) {
         try {
-            await db.collection('collections').doc(collectionId).delete();
+            // Get current authenticated session
+            const { data: sessionData, error: sessionError } = await window.supabase.auth.getSession();
+            if (sessionError || !sessionData.session) {
+                throw new Error('Admin authentication required. Please log in again.');
+            }
+            
+            const accessToken = sessionData.session.access_token;
+            
+            const response = await fetch(`${supabaseUrl}/rest/v1/collections?id=eq.${encodeURIComponent(collectionId)}`, {
+                method: 'DELETE',
+                headers: {
+                    apikey: supabaseKey,
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Delete failed: ${response.status} ${errorText}`);
+            }
+
+            console.log('✓ Collection deleted from Supabase with authenticated session');
             alert('Collection deleted successfully!');
             await loadCollections();
             displayCollections();
@@ -848,13 +934,22 @@ function loadRecentOrders() {
 }
 
 // ===== LOGOUT =====
-function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('admin_session');
-        localStorage.removeItem('admin_username');
-        localStorage.removeItem('admin_login_time');
-        window.location.href = 'admin-login.html';
+async function logout() {
+    if (!confirm('Are you sure you want to logout?')) {
+        return;
     }
+
+    try {
+        if (window.supabase && typeof window.supabase.auth?.signOut === 'function') {
+            await window.supabase.auth.signOut();
+        }
+    } catch (error) {
+        console.error('Supabase sign out error:', error);
+    }
+
+    localStorage.removeItem('admin_username');
+    localStorage.removeItem('admin_login_time');
+    window.location.href = 'admin-login.html';
 }
 
 // ===== SIDEBAR TOGGLE =====
