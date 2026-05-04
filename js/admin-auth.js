@@ -56,7 +56,7 @@ document.getElementById('admin-login-form').addEventListener('submit', async (e)
             return;
         }
 
-        localStorage.setItem('admin_username', ADMIN_USERNAME);
+        localStorage.setItem('admin_email', ADMIN_EMAIL);
         showSuccess('Admin login successful! Redirecting...');
         setTimeout(() => {
             window.location.href = 'admin-dashboard.html';

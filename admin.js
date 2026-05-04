@@ -100,10 +100,10 @@ function saveSlideshow() {
 // ============ AUTHENTICATION ============
 function handleLogin(event) {
   event.preventDefault();
-  const username = document.getElementById('adminUsername')?.value.trim();
+  const email = document.getElementById('adminEmail')?.value.trim();
   const password = document.getElementById('adminPassword')?.value.trim();
 
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
     loginSection.hidden = true;
     dashboardSection.hidden = false;
     if (logoutButton) logoutButton.hidden = false;

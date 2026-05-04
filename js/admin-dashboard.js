@@ -2,7 +2,7 @@
 const ADMIN_EMAIL = 'klyrastudio11@gmail.com';
 const ADMIN_PASSWORD = 'Klyrastudio@11';
 const PAYMENT_UPI = 'keerthi8015-2@okaxis';
-const CONTACT_WHATSAPP = '063811 63108';
+const CONTACT_WHATSAPP = '63811 63108';
 
 let currentTab = 'dashboard';
 let allProducts = [];
@@ -48,7 +48,7 @@ window.addEventListener('load', async () => {
     }
 
     const session = data?.session;
-    if (!session || session.user?.user_metadata?.username !== ADMIN_USERNAME) {
+    if (!session || session.user?.email !== ADMIN_EMAIL) {
         window.location.href = 'admin-login.html';
         return;
     }
@@ -798,7 +798,7 @@ async function verifyPayment(orderId) {
                 paymentStatus: 'verified',
                 status: 'confirmed',
                 verifiedAt: new Date().toISOString(),
-                verifiedBy: localStorage.getItem('admin_username')
+                verifiedBy: localStorage.getItem('admin_email')
             });
             
             // Send WhatsApp notification
@@ -947,7 +947,7 @@ async function logout() {
         console.error('Supabase sign out error:', error);
     }
 
-    localStorage.removeItem('admin_username');
+    localStorage.removeItem('admin_email');
     localStorage.removeItem('admin_login_time');
     window.location.href = 'admin-login.html';
 }
