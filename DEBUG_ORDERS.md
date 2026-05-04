@@ -71,7 +71,7 @@ DOM Elements:
 
 ## Step 5: Login to Admin
 
-Username: `admin`
+Email: `klyrastudio11@gmail.com`
 Password: `Klyrastudio@11`
 
 In Console, watch for:

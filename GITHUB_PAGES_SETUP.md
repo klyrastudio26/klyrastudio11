@@ -150,7 +150,7 @@ CREATE POLICY "Orders are public" ON orders
 
 2. **Test Admin Upload**
    - Go to admin: https://klyrastudio.github.io/klyrastudio/pages/admin-dashboard.html
-   - Username: `admin`
+   - Email: `klyrastudio11@gmail.com`
    - Password: `Klyrastudio@11`
    - Add a test product
    - Check console for "✓ Product inserted into Supabase"

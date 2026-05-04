@@ -1,5 +1,4 @@
 // Admin Authentication using Supabase Auth
-const ADMIN_USERNAME = 'admin';
 const ADMIN_EMAIL = 'klyrastudio11@gmail.com';
 
 async function initAdminAuth() {
@@ -15,7 +14,7 @@ async function initAdminAuth() {
     }
 
     const session = data?.session;
-    if (session && session.user?.user_metadata?.username === ADMIN_USERNAME) {
+    if (session && session.user?.email === ADMIN_EMAIL) {
         window.location.href = 'admin-dashboard.html';
     }
 }
@@ -25,34 +24,33 @@ document.addEventListener('DOMContentLoaded', initAdminAuth);
 document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const username = document.getElementById('admin-username').value.trim();
+    const email = document.getElementById('admin-email').value.trim();
     const password = document.getElementById('admin-password').value;
 
-    if (!username || !password) {
+    if (!email || !password) {
         showError('Please fill in all fields');
         return;
     }
 
-    if (username !== ADMIN_USERNAME) {
-        showError('Invalid username or password');
+    if (email !== ADMIN_EMAIL) {
+        showError('Invalid email or password');
         return;
     }
 
     try {
         const { data, error } = await window.supabase.auth.signInWithPassword({
-            email: ADMIN_EMAIL,
+            email: email,
             password
         });
 
         if (error) {
             console.error('Supabase sign-in error:', error);
-            showError('Invalid username or password');
+            showError('Invalid email or password');
             return;
         }
 
         const user = data.user;
-        const metadataUsername = user?.user_metadata?.username;
-        if (metadataUsername !== ADMIN_USERNAME) {
+        if (user.email !== ADMIN_EMAIL) {
             await window.supabase.auth.signOut();
             showError('Invalid admin account. Please contact support.');
             return;

@@ -1,6 +1,6 @@
 // Admin Dashboard
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'admin';
+const ADMIN_EMAIL = 'klyrastudio11@gmail.com';
+const ADMIN_PASSWORD = 'Klyrastudio@11';
 const PAYMENT_UPI = 'keerthi8015-2@okaxis';
 const CONTACT_WHATSAPP = '063811 63108';
 

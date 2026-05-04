@@ -115,7 +115,7 @@ Your professional jewelry e-commerce website is ready for deployment!
 
 ### 🔐 Security & Authentication
 ✅ **Admin Login** (`pages/admin-login.html`)
-- Credentials: `admin` / `admin`
+- Credentials: `klyrastudio11@gmail.com` / `Klyrastudio@11`
 - Session token generation
 - Login time tracking
 - Secure access control
@@ -277,7 +277,7 @@ Choose one:
 - Vercel
 
 ### Step 4: Add Products
-1. Login to admin: `admin` / `admin`
+1. Login to admin: `klyrastudio11@gmail.com` / `Klyrastudio@11`
 2. Add collections
 3. Add products with images
 
@@ -327,7 +327,7 @@ All customizable items are clearly marked. Update:
 - Business name (search "KLYRA STUDIO")
 - Contact info (phone, WhatsApp, UPI)
 - Instagram handle (@klyrastudio)
-- Admin credentials (admin/admin)
+- Admin credentials (klyrastudio11@gmail.com/Klyrastudio@11)
 - Colors (search #d4af37 for gold)
 - Firebase config (js/config.js)
 

@@ -16,7 +16,7 @@
 1. Open `index.html` in browser
 2. Click "Add to Cart" to add products
 3. Go through checkout
-4. Try admin login: `admin` / `admin`
+4. Try admin login: `klyrastudio11@gmail.com` / `Klyrastudio@11`
 
 ## 📋 Key Files Explained
 
@@ -41,7 +41,7 @@
 ## 🔑 Important Credentials
 
 **Admin Portal:**
-- Username: `admin`
+- Email: `klyrastudio11@gmail.com`
 - Password: `Klyrastudio@11`
 
 **Payment UPI:** `keerthi8015-2@okaxis`
@@ -108,7 +108,7 @@ Search and update these in your files:
 OLD VALUE → NEW VALUE
 keerthi8015-2@okaxis → YOUR_UPI_ID
 063811 63108 → YOUR_WHATSAPP
-admin → YOUR_ADMIN_USERNAME
+klyrastudio11@gmail.com → YOUR_ADMIN_EMAIL
 Klyrastudio@11 → YOUR_ADMIN_PASSWORD
 @klyrastudio → @YOUR_INSTAGRAM
 ```
