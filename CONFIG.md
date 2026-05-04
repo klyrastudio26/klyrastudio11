@@ -20,7 +20,7 @@ Email: For contact form
 
 ### Admin Credentials
 ```
-Username: Klyrastudio11  (Update in: js/admin-auth.js)
+Username: admin  (Update in: js/admin-auth.js)
 Password: Klyrastudio@11  (Update in: js/admin-auth.js)
 
 ⚠️  IMPORTANT: Change these for production!
@@ -76,7 +76,7 @@ Search for `@klyrastudio` in:
 ### 4. Update Admin Credentials
 Edit `js/admin-auth.js`:
 ```javascript
-const ADMIN_USERNAME = 'Klyrastudio11';  // Change this
+const ADMIN_USERNAME = 'admin';  // Change this
 const ADMIN_PASSWORD = 'Klyrastudio@11';  // Change this
 ```
 

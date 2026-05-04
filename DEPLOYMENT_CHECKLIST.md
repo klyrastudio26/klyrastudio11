@@ -64,7 +64,7 @@ Use this checklist to ensure everything is ready before going live!
 - [ ] Order ID generated correctly
 
 ### Admin Portal
-- [ ] Admin login works (Klyrastudio11/Klyrastudio@11)
+- [ ] Admin login works (admin/admin)
 - [ ] Dashboard displays statistics
 - [ ] Products tab shows all products
 - [ ] Can add new products

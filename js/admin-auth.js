@@ -1,5 +1,5 @@
 // Admin Authentication using Supabase Auth
-const ADMIN_USERNAME = 'Klyrastudio11';
+const ADMIN_USERNAME = 'admin';
 const ADMIN_EMAIL = 'klyrastudio11@gmail.com';
 
 async function initAdminAuth() {
