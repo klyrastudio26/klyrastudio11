@@ -41,8 +41,10 @@ body {
 
 .brand-logo {
     width: 42px;
-    height: auto;
+    height: 42px;
     display: block;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .toggle-sidebar {

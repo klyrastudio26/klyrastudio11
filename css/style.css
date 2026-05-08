@@ -68,7 +68,7 @@ body {
     gap: 14px;
 }
 
-..logo h1 {
+.logo h1 {
     font-family: 'Playfair Display', serif;
     font-size: 20px;
     color: #000;
@@ -279,9 +279,11 @@ body {
 .hero-brand-logo {
     width: 128px;
     max-width: 90%;
-    height: auto;
+    height: 128px;
     margin: 0 auto 24px;
     display: block;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .hero-logo-embed {

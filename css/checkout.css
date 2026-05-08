@@ -42,18 +42,10 @@ body {
 
 .brand-logo {
     width: 54px;
-    height: auto;
-    display: block;
-}
-
-.steps {
-    display: flex;
-    gap: 30px;
-    justify-content: center;
-}
-
-.step {
-    display: flex;
+        height: 54px;
+        display: block;
+        border-radius: 50%;
+        object-fit: cover;
     flex-direction: column;
     align-items: center;
     opacity: 0.5;

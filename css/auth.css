@@ -70,8 +70,10 @@ body {
 
 .brand-logo {
     width: 64px;
-    height: auto;
+    height: 64px;
     display: block;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 form {
