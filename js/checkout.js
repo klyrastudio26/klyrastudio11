@@ -359,7 +359,7 @@ async function uploadPaymentScreenshot(file) {
 }
 
 function sendOrderWhatsApp(phone, orderData) {
-    const message = `Hi ${orderData.customerName},\n\n✓ Your order has been placed successfully!\n\n📦 Order ID: ${orderData.id}\n💰 Amount: ₹${(orderData.total || 0).toFixed(2)} (including tax)\n\n⏳ Status: Awaiting payment verification\n\n📤 You have uploaded the payment screenshot. Our admin will verify it shortly.\n\n🎁 Thank you for shopping with Klyra Studio!\n\nFor any queries, call: ${CONTACT_WHATSAPP}`;
+    const message = `Hi ${orderData.customerName},\n\n✓ Your order has been placed successfully!\n\n📦 Order ID: ${orderData.id}\n💰 Amount: ₹${(orderData.total || 0).toFixed(2)} (including shipping)\n\n⏳ Status: Awaiting payment verification\n\n📤 You have uploaded the payment screenshot. Our admin will verify it shortly.\n\n🎁 Thank you for shopping with Klyra Studio!\n\nFor any queries, call: ${CONTACT_WHATSAPP}`;
     
     console.log('📱 Order confirmation message ready for:', phone);
     console.log('Message:', message);
