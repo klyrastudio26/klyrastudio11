@@ -465,5 +465,5 @@ function showSignupSuccess(message) {
 // ===== EXPOSE FUNCTIONS TO WINDOW (GLOBAL SCOPE) =====
 window.goToStep = goToStep;
 window.validateShippingForm = validateShippingForm;
-window.completeOrder = completeOrder;
+window.submitOrder = submitOrder;
 window.proceedToCheckout = proceedToCheckout;
