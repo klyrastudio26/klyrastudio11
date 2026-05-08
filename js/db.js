@@ -4,6 +4,20 @@ function isSupabaseReady() {
   return typeof window !== 'undefined' && window.supabase && typeof window.supabase.from === 'function';
 }
 
+function shouldFallbackToLocalStorage(error) {
+  if (!error) return false;
+  const message = ((error.message || '') + ' ' + (error.details || '') + ' ' + (error.hint || '')).trim();
+  const code = error.code || '';
+  return (
+    code === '42703' ||
+    code === 'PGRST204' ||
+    /column .* does not exist/i.test(message) ||
+    /Could not find the .* column/i.test(message) ||
+    /schema cache/i.test(message) ||
+    /relation .* does not exist/i.test(message)
+  );
+}
+
 // Supabase classes if available
 class SupabaseCollection {
   constructor(name) {
@@ -13,8 +27,7 @@ class SupabaseCollection {
   async add(data) {
     const { data: result, error } = await window.supabase.from(this.table).insert(data, { returning: 'minimal' });
     if (error) {
-      const message = error.message || '';
-      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
+      if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase insert failed, falling back to local storage for', this.table, error);
         const coreDb = window.db || globalThis.db;
         const localCollection = new LocalCollection(this.table, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
@@ -34,8 +47,7 @@ class SupabaseCollection {
   async get() {
     const { data, error } = await window.supabase.from(this.table).select('*');
     if (error) {
-      const message = error.message || '';
-      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
+      if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase fetch failed, falling back to local storage for', this.table, error);
         const coreDb = window.db || globalThis.db;
         const localCollection = new LocalCollection(this.table, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
@@ -74,8 +86,7 @@ class SupabaseDocument {
   async set(data) {
     const { error } = await window.supabase.from(this.table).upsert({ id: this.docId, ...data });
     if (error) {
-      const message = error.message || '';
-      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
+      if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase upsert failed, falling back to local storage for', this.table, error);
         const coreDb = window.db || globalThis.db;
         const localDoc = new LocalDocument(this.table, this.docId, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
@@ -88,8 +99,7 @@ class SupabaseDocument {
   async update(data) {
     const { error } = await window.supabase.from(this.table).update(data).eq('id', this.docId);
     if (error) {
-      const message = error.message || '';
-      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
+      if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase update failed, falling back to local storage for', this.table, error);
         const coreDb = window.db || globalThis.db;
         const localDoc = new LocalDocument(this.table, this.docId, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
@@ -131,9 +141,8 @@ class SupabaseQuery {
     }
     const { data, error } = await query;
     if (error) {
-      const message = error.message || '';
-      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
-        console.warn('Supabase query failed, falling back to local storage for', this.table, this.field);
+      if (shouldFallbackToLocalStorage(error)) {
+        console.warn('Supabase query failed, falling back to local storage for', this.table, this.field, error);
         const localQuery = new LocalQuery(this.table, this.field, this.operator, this.value, null, Promise.resolve(), false);
         return localQuery.get();
       }
