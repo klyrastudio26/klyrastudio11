@@ -1,4 +1,7 @@
 // Global Variables
+const CART_STORAGE_KEY = 'klyra_cart';
+const LEGACY_CART_KEY = 'cart';
+const SHIPPING_COST = 40;
 let cart = [];
 let products = [];
 let collections = [];
@@ -382,14 +385,16 @@ function addToCart(productId) {
 }
 
 function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
+    const normalizedId = String(productId);
+    cart = cart.filter(item => String(item.id) !== normalizedId);
     saveCart();
     updateCartCount();
     displayCart();
 }
 
 function updateQuantity(productId, change) {
-    const item = cart.find(item => item.id === productId);
+    const normalizedId = String(productId);
+    const item = cart.find(item => String(item.id) === normalizedId);
     if (item) {
         item.quantity += change;
         if (item.quantity <= 0) {
@@ -433,11 +438,11 @@ function displayCart() {
 
 function updateCartSummary() {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const tax = Math.round(subtotal * 0.18);
-    const total = subtotal + tax;
+    const shipping = SHIPPING_COST;
+    const total = subtotal + shipping;
 
     document.getElementById('subtotal').textContent = `₹${subtotal}`;
-    document.getElementById('tax').textContent = `₹${tax}`;
+    document.getElementById('tax').textContent = `₹${shipping}`;
     document.getElementById('total').textContent = `₹${total}`;
 }
 
@@ -455,11 +460,13 @@ function toggleCart() {
 }
 
 function saveCart() {
-    localStorage.setItem('klyra_cart', JSON.stringify(cart));
+    const data = JSON.stringify(cart);
+    localStorage.setItem(CART_STORAGE_KEY, data);
+    localStorage.setItem(LEGACY_CART_KEY, data);
 }
 
 function loadCart() {
-    const saved = localStorage.getItem('klyra_cart');
+    const saved = localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem(LEGACY_CART_KEY);
     if (saved) {
         cart = JSON.parse(saved);
         updateCartCount();
@@ -486,15 +493,15 @@ function proceedToCheckout() {
         return;
     }
 
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const tax = Math.round(total * 0.18);
-    const finalTotal = total + tax;
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shipping = SHIPPING_COST;
+    const finalTotal = subtotal + shipping;
 
     // Store order details in sessionStorage
     sessionStorage.setItem('checkout_data', JSON.stringify({
         items: cart,
-        subtotal: total,
-        tax: tax,
+        subtotal,
+        tax: shipping,
         total: finalTotal,
         timestamp: new Date().toISOString()
     }));
@@ -585,6 +592,4 @@ window.viewProduct = viewProduct;
 window.updateQuantity = updateQuantity;
 window.removeFromCart = removeFromCart;
 window.proceedToCheckout = proceedToCheckout;
-window.changeSlide = changeSlide;
-window.currentSlide = currentSlide; // Function (not the variable)
 window.reloadAllData = reloadAllData;

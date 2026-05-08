@@ -43,7 +43,7 @@
         .dashboard-header .btn-logout:hover {
             background-color: #e8c547;
         }
-        
+
         .orders-container {
             margin-top: 30px;
         }
@@ -249,15 +249,7 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <div class="logo">
-                <img src="../assets/klyra-logo.svg" alt="Klyra Studio Logo" class="brand-logo">
-                <div>
-                    <h1>KLYRA STUDIO</h1>
-                    <p>Luxury Jewelry Collection</p>
-                </div>
-            </div>
-            <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleMobileMenu()" aria-label="Toggle navigation">
-                <i class="fas fa-bars"></i>
+            <   <i class="fas fa-bars"></i>
             </button>
             <div class="nav-links" id="navLinks">
                 <a href="../index.html" class="active">Home</a>
@@ -311,6 +303,8 @@
     <script src="../js/migrate-storage.js"></script>
     <script>
         // Global Variables
+        const CART_STORAGE_KEY = 'klyra_cart';
+        const LEGACY_CART_KEY = 'cart';
         let cart = [];
         let userOrders = [];
 
@@ -488,7 +482,7 @@
 
         // Load cart
         async function loadCart() {
-            const cartData = sessionStorage.getItem('cart') || localStorage.getItem('cart');
+            const cartData = sessionStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem(CART_STORAGE_KEY) || localStorage.getItem(LEGACY_CART_KEY);
             if (cartData) {
                 cart = JSON.parse(cartData);
                 updateCartCount();
@@ -496,7 +490,8 @@
         }
 
         function updateCartCount() {
-            document.getElementById('cart-count').textContent = cart.length;
+            const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            document.getElementById('cart-count').textContent = count;
         }
 
         function toggleCart() {
@@ -528,15 +523,40 @@
         }
 
         function proceedToCheckout() {
+            if (cart.length === 0) {
+                alert('Your cart is empty');
+                return;
+            }
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = 40;
+            const total = subtotal + shipping;
+
+            sessionStorage.setItem('checkout_data', JSON.stringify({
+                items: cart,
+                subtotal,
+                tax: shipping,
+                total,
+                timestamp: new Date().toISOString()
+            }));
+
             window.location.href = '../pages/checkout.html';
         }
 
         function logoutUser() {
             localStorage.removeItem('user_phone');
-            sessionStorage.removeItem('cart');
-            localStorage.removeItem('cart');
+            sessionStorage.removeItem(CART_STORAGE_KEY);
+            localStorage.removeItem(CART_STORAGE_KEY);
+            sessionStorage.removeItem(LEGACY_CART_KEY);
+            localStorage.removeItem(LEGACY_CART_KEY);
             cart = [];
             window.location.href = '../index.html';
+        }
+
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            if (!navLinks) return;
+            navLinks.classList.toggle('open');
         }
 
         // Initialize

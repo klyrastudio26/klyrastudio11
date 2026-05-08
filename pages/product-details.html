@@ -409,14 +409,16 @@
         }
 
         function loadCartFromStorage() {
-            const savedCart = localStorage.getItem('cart');
+            const savedCart = localStorage.getItem('klyra_cart') || localStorage.getItem('cart');
             if (savedCart) {
                 cart = JSON.parse(savedCart);
             }
         }
 
         function saveCartToStorage() {
-            localStorage.setItem('cart', JSON.stringify(cart));
+            const data = JSON.stringify(cart);
+            localStorage.setItem('klyra_cart', data);
+            localStorage.setItem('cart', data);
         }
 
         function updateCartCount() {
@@ -469,10 +471,17 @@
                 return;
             }
 
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = 40;
+            const total = subtotal + shipping;
+
             // Store cart in sessionStorage for checkout page
             sessionStorage.setItem('checkout_data', JSON.stringify({
                 items: cart,
-                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                subtotal,
+                tax: shipping,
+                total,
+                timestamp: new Date().toISOString()
             }));
 
             window.location.href = 'checkout.html';

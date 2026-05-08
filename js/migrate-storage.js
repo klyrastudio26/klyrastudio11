@@ -63,10 +63,12 @@ async function migrateLocalStorageToIndexedDB() {
   console.log(`✓ Migration complete! Migrated ${itemsMigrated} total items`);
   
   // Also migrate cart data
-  const cartData = localStorage.getItem('cart');
+  const cartData = localStorage.getItem('klyra_cart') || localStorage.getItem('cart');
   if (cartData) {
+    localStorage.setItem('klyra_cart', cartData);
+    localStorage.setItem('cart', cartData);
     localStorage.setItem('cart_migrated', 'true');
-    console.log('Cart data preserved');
+    console.log('Cart data preserved and duplicated to modern storage key');
   }
   
   return itemsMigrated;

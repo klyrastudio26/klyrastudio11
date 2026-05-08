@@ -334,6 +334,9 @@ async function submitOrder() {
 
         // Clear cart and session
         localStorage.removeItem('klyra_cart');
+        localStorage.removeItem('cart');
+        sessionStorage.removeItem('klyra_cart');
+        sessionStorage.removeItem('cart');
         sessionStorage.removeItem('checkout_data');
 
     } catch (error) {
