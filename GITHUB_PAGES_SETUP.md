@@ -139,6 +139,35 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Orders are public" ON orders
     FOR SELECT TO public
     USING (true);
+
+CREATE POLICY "Orders can be inserted by authenticated users" ON orders
+    FOR INSERT TO authenticated
+    WITH CHECK (true);
+
+CREATE POLICY "Orders can be updated by authenticated users" ON orders
+    FOR UPDATE TO authenticated
+    WITH CHECK (true);
+
+CREATE POLICY "Orders can be deleted by authenticated users" ON orders
+    FOR DELETE TO authenticated
+    USING (true);
+```
+
+### 5. Create "users" Table (Optional but recommended for admin user management)
+```sql
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    phone TEXT,
+    email TEXT,
+    name TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users are accessible to authenticated admins" ON users
+    FOR SELECT TO authenticated
+    USING (true);
 ```
 
 ## ✅ Verify Setup

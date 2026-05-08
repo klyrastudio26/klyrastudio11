@@ -187,37 +187,48 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ===== PRODUCT FUNCTIONS ======
 async function loadProducts() {
     try {
-        console.log('📦 Loading products from Supabase (REQUIRED for all users to see)...');
+        console.log('📦 Loading products...');
         
-        // CRITICAL: ALWAYS use Supabase for public product data
-        // This ensures all users see the same products
-        if (!window.supabase || typeof window.supabase.from !== 'function') {
-            console.error('❌ CRITICAL: Supabase not available! Products will not be visible to other users.');
-            document.getElementById('products-grid').innerHTML = '<div class="loading" style="color: red;">⚠️ Database connection issue. Please refresh the page.</div>';
-            return;
+        let querySnapshot;
+        try {
+            querySnapshot = await db.collection('products').get();
+            console.log('✓ Loaded products from database');
+        } catch (error) {
+            console.warn('⚠️ Products load failed, falling back to localStorage:', error);
+            const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
+            querySnapshot = {
+                docs: localProducts.map(item => ({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                })),
+                forEach: callback => localProducts.forEach(item => callback({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                }))
+            };
         }
         
-        const { data, error } = await window.supabase.from('products').select('*');
+        products = [];
+        querySnapshot.forEach(doc => {
+            products.push({
+                id: doc.id,
+                name: doc.data().name,
+                collection: doc.data().collection,
+                price: doc.data().price,
+                description: doc.data().description,
+                image: doc.data().image || 'https://via.placeholder.com/280x250'
+            });
+        });
         
-        if (error) {
-            console.error('❌ Supabase fetch error:', error);
-            console.error('Error details:', error.message, error.code);
-            document.getElementById('products-grid').innerHTML = '<div class="loading" style="color: red;">Error: ' + error.message + '</div>';
-            return;
-        }
-        
-        products = data.map(item => ({
-            id: item.id,
-            name: item.name,
-            collection: item.collection,
-            price: item.price,
-            description: item.description,
-            image: item.image || 'https://via.placeholder.com/280x250'
-        }));
-        
-        console.log('✓ Loaded ' + products.length + ' products from Supabase:', products);
-        console.log('✓ These products are NOW VISIBLE to ALL USERS across all devices');
-        
+        console.log('✓ Loaded ' + products.length + ' products');
         displayProducts(products);
     } catch (error) {
         console.error('❌ Error loading products:', error);
@@ -227,25 +238,46 @@ async function loadProducts() {
 
 async function loadCollections() {
     try {
-        console.log('📦 Loading collections from Supabase...');
+        console.log('📦 Loading collections...');
 
-        if (!window.supabase || typeof window.supabase.from !== 'function') {
-            throw new Error('Supabase client is unavailable');
+        let querySnapshot;
+        try {
+            querySnapshot = await db.collection('collections').get();
+            console.log('✓ Loaded collections from database');
+        } catch (error) {
+            console.warn('⚠️ Collections load failed, falling back to localStorage:', error);
+            const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
+            querySnapshot = {
+                docs: localCollections.map(item => ({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                })),
+                forEach: callback => localCollections.forEach(item => callback({
+                    id: item.id,
+                    data: () => {
+                        const copy = { ...item };
+                        delete copy.id;
+                        return copy;
+                    }
+                }))
+            };
         }
 
-        const { data, error } = await window.supabase.from('collections').select('*');
-        if (error) {
-            throw error;
-        }
+        collections = [];
+        querySnapshot.forEach(doc => {
+            collections.push({
+                id: doc.id,
+                name: doc.data().name,
+                description: doc.data().description,
+                image: doc.data().image || 'https://via.placeholder.com/200x150'
+            });
+        });
 
-        collections = data.map(item => ({
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            image: item.image || 'https://via.placeholder.com/200x150'
-        }));
-
-        console.log('✓ Loaded ' + collections.length + ' collections from Supabase:', collections);
+        console.log('✓ Loaded ' + collections.length + ' collections');
 
         let filterHTML = '';
         collections.forEach((collectionData) => {
@@ -254,7 +286,7 @@ async function loadCollections() {
 
         document.getElementById('collection-filters').innerHTML = filterHTML;
     } catch (error) {
-        console.warn('⚠️ Supabase collections failed, falling back to local collections:', error);
+        console.warn('⚠️ Error loading collections:', error);
         const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
         collections = localCollections;
 

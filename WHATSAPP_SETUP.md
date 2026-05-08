@@ -198,4 +198,4 @@ The system is designed to be flexible:
 - QR codes can be scanned to auto-open WhatsApp
 - Easy to migrate to full API later
 
-All message templates are in admin-dashboard.js and checkout.js
+All message templates are in admin-dashboard.js and checkout.js               

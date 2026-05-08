@@ -283,7 +283,32 @@
         async function loadProductDetails(productId) {
             try {
                 console.log('Loading product:', productId);
-                const allProducts = await db.collection('products').get();
+                let allProducts;
+                
+                try {
+                    allProducts = await db.collection('products').get();
+                } catch (error) {
+                    console.warn('⚠️ Product load failed, falling back to localStorage:', error);
+                    const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                    allProducts = {
+                        docs: localProducts.map(item => ({
+                            id: item.id,
+                            data: () => {
+                                const copy = { ...item };
+                                delete copy.id;
+                                return copy;
+                            }
+                        })),
+                        forEach: callback => localProducts.forEach(item => callback({
+                            id: item.id,
+                            data: () => {
+                                const copy = { ...item };
+                                delete copy.id;
+                                return copy;
+                            }
+                        }))
+                    };
+                }
                 
                 let found = false;
                 allProducts.forEach(doc => {

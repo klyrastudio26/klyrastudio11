@@ -138,14 +138,14 @@ async function loadProducts() {
         console.log('📦 Admin: Loading products...');
         let querySnapshot;
 
-        if (window.supabase && typeof window.supabase.from === 'function') {
-            const { data, error } = await window.supabase.from('products').select('*');
-            if (error) {
-                console.error('❌ Supabase fetch error:', error);
-                throw error;
-            }
+        try {
+            querySnapshot = await db.collection('products').get();
+            console.log('✓ Loaded products from database');
+        } catch (error) {
+            console.warn('⚠️ Products load failed, falling back to localStorage:', error);
+            const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
             querySnapshot = {
-                docs: data.map(item => ({
+                docs: localProducts.map(item => ({
                     id: item.id,
                     data: () => {
                         const copy = { ...item };
@@ -153,7 +153,7 @@ async function loadProducts() {
                         return copy;
                     }
                 })),
-                forEach: callback => data.forEach(item => callback({
+                forEach: callback => localProducts.forEach(item => callback({
                     id: item.id,
                     data: () => {
                         const copy = { ...item };
@@ -162,10 +162,6 @@ async function loadProducts() {
                     }
                 }))
             };
-            console.log('✓ Fetched', data.length, 'products from Supabase');
-        } else {
-            querySnapshot = await db.collection('products').get();
-            console.log('✓ Got query snapshot, docs count:', querySnapshot.docs ? querySnapshot.docs.length : 'unknown');
         }
         
         allProducts = [];
@@ -264,30 +260,34 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
             image: imageData
         };
 
-        if (window.supabase && typeof window.supabase.from === 'function') {
-            if (existingProductId) {
-                const { data, error } = await window.supabase.from('products').update(productPayload).eq('id', existingProductId);
-                if (error) throw error;
-                console.log('✓ Product updated in Supabase with authenticated session');
-            } else {
-                const { data, error } = await window.supabase.from('products').insert(productPayload, { returning: 'minimal' });
-                if (error) throw error;
-                console.log('✓ Product inserted into Supabase with authenticated session');
-            }
-        } else {
+        try {
             if (existingProductId) {
                 await db.collection('products').doc(existingProductId).update(productPayload);
+                console.log('✓ Product updated');
             } else {
                 await db.collection('products').add(productPayload);
+                console.log('✓ Product added');
             }
-            console.log('⚠️ Product saved to local fallback storage because Supabase was not ready');
+            alert(existingProductId ? 'Product updated successfully!' : 'Product added successfully!');
+        } catch (error) {
+            console.warn('⚠️ Save failed, saving to localStorage instead:', error);
+            const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
+            if (existingProductId) {
+                const index = localProducts.findIndex(p => p.id === existingProductId);
+                if (index >= 0) {
+                    localProducts[index] = { ...localProducts[index], ...productPayload };
+                }
+            } else {
+                const newProduct = { id: 'local_' + Date.now(), ...productPayload };
+                localProducts.push(newProduct);
+            }
+            localStorage.setItem('products', JSON.stringify(localProducts));
+            alert('Product saved locally because save failed.');
         }
         
-        alert(existingProductId ? '✓ Product updated successfully!' : '✓ Product added successfully!');
         closeProductModal();
         await loadProducts();
         displayProducts();
-        console.log('✓ Product display updated');
     } catch (error) {
         console.error('❌ Error saving product:', error);
         alert('❌ Error saving product: ' + error.message);
@@ -297,21 +297,18 @@ document.getElementById('product-form')?.addEventListener('submit', async (e) =>
 async function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product?')) {
         try {
-            if (window.supabase && typeof window.supabase.from === 'function') {
-                const { error } = await window.supabase.from('products').delete().eq('id', productId);
-                if (error) throw error;
-                console.log('✓ Product deleted from Supabase with authenticated session');
-            } else {
-                await db.collection('products').doc(productId).delete();
-                console.log('⚠️ Product deleted from local fallback storage');
-            }
-
+            await db.collection('products').doc(productId).delete();
+            console.log('✓ Product deleted');
             alert('Product deleted successfully!');
-            await loadProducts();
-            displayProducts();
         } catch (error) {
-            alert('Error deleting product: ' + error.message);
+            console.warn('⚠️ Delete failed, removing from localStorage instead:', error);
+            const localProducts = JSON.parse(localStorage.getItem('products') || '[]');
+            const filtered = localProducts.filter(p => p.id !== productId);
+            localStorage.setItem('products', JSON.stringify(filtered));
+            alert('Product removed locally because delete failed.');
         }
+        await loadProducts();
+        displayProducts();
     }
 }
 
@@ -349,13 +346,14 @@ async function loadCollections() {
         console.log('📦 Admin: Loading collections...');
         let querySnapshot;
 
-        if (window.supabase && typeof window.supabase.from === 'function') {
-            const { data, error } = await window.supabase.from('collections').select('*');
-            if (error) {
-                throw error;
-            }
+        try {
+            querySnapshot = await db.collection('collections').get();
+            console.log('✓ Loaded collections from database');
+        } catch (error) {
+            console.warn('⚠️ Collections load failed, falling back to localStorage:', error);
+            const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
             querySnapshot = {
-                docs: data.map(item => ({
+                docs: localCollections.map(item => ({
                     id: item.id,
                     data: () => {
                         const copy = { ...item };
@@ -363,7 +361,7 @@ async function loadCollections() {
                         return copy;
                     }
                 })),
-                forEach: callback => data.forEach(item => callback({
+                forEach: callback => localCollections.forEach(item => callback({
                     id: item.id,
                     data: () => {
                         const copy = { ...item };
@@ -372,10 +370,6 @@ async function loadCollections() {
                     }
                 }))
             };
-            console.log('✓ Fetched', data.length, 'collections from Supabase');
-        } else {
-            querySnapshot = await db.collection('collections').get();
-            console.log('✓ Got query snapshot, docs count:', querySnapshot.docs ? querySnapshot.docs.length : 'unknown');
         }
 
         allCollections = [];
@@ -387,9 +381,8 @@ async function loadCollections() {
         });
         console.log('✓ Loaded ' + allCollections.length + ' collections from admin');
     } catch (error) {
-        console.warn('⚠️ Supabase collections failed, fallback to local collections:', error);
-        const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
-        allCollections = localCollections;
+        console.warn('⚠️ Error loading collections:', error);
+        allCollections = [];
     }
 }
 
@@ -416,6 +409,35 @@ function displayCollections() {
             </div>
         </div>
     `).join('');
+}
+
+function normalizeOrder(raw) {
+    return {
+        id: raw.id,
+        customerName: raw.customerName || raw.customer_name || raw.customer || '',
+        customerPhone: raw.customerPhone || raw.customer_phone || raw.phone || '',
+        total: parseFloat(raw.total ?? raw.total_amount ?? raw.amount ?? 0) || 0,
+        status: raw.status || raw.order_status || raw.orderStatus || 'pending',
+        paymentStatus: raw.paymentStatus || raw.payment_status || raw.paymentStatus || 'pending',
+        createdAt: raw.createdAt || raw.created_at || ''
+    };
+}
+
+function isSupabaseMissingTableError(error) {
+    return error && (error.code === 'PGRST205' || /Could not find the table/i.test(error.message || ''));
+}
+
+function normalizeUser(raw) {
+    return {
+        id: raw.id,
+        phone: raw.phone || raw.phone_number || raw.customer_phone || '',
+        email: raw.email || raw.user_email || raw.username || '',
+        name: raw.name || raw.username || raw.fullname || raw.displayName || ''
+    };
+}
+
+function shortId(id) {
+    return String(id || '').substring(0, 8);
 }
 
 function showAddCollectionModal() {
@@ -449,72 +471,43 @@ document.getElementById('collection-form')?.addEventListener('submit', async (e)
             image: imageData
         };
         
-        if (document.getElementById('collection-form').dataset.collectionId) {
-            const collectionId = document.getElementById('collection-form').dataset.collectionId;
-            
-            // Get current authenticated session
-            const { data: sessionData, error: sessionError } = await window.supabase.auth.getSession();
-            if (sessionError || !sessionData.session) {
-                throw new Error('Admin authentication required. Please log in again.');
-            }
-            
-            const accessToken = sessionData.session.access_token;
-            
-            const response = await fetch(`${supabaseUrl}/rest/v1/collections?id=eq.${encodeURIComponent(collectionId)}`, {
-                method: 'PATCH',
-                headers: {
-                    apikey: supabaseKey,
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json',
-                    Prefer: 'return=minimal'
-                },
-                body: JSON.stringify(formData)
-            });
+        const collectionId = document.getElementById('collection-form').dataset.collectionId;
+        const canUseSupabase = window.supabase && typeof window.supabase.from === 'function';
+        const localOnly = collectionId && collectionId.toString().startsWith('local_');
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Supabase update failed: ${response.status} ${errorText}`);
-            }
-
-            console.log('✓ Collection updated in Supabase with authenticated session');
-            alert('Collection updated successfully!');
-            delete document.getElementById('collection-form').dataset.collectionId;
-        } else {
-            try {
-                // Get current authenticated session
-                const { data: sessionData, error: sessionError } = await window.supabase.auth.getSession();
-                if (sessionError || !sessionData.session) {
-                    throw new Error('Admin authentication required. Please log in again.');
+        try {
+            if (canUseSupabase && !localOnly) {
+                if (collectionId) {
+                    const { error } = await window.supabase.from('collections').update(formData).eq('id', collectionId);
+                    if (error) throw error;
+                    console.log('✓ Collection updated in Supabase');
+                    alert('Collection updated successfully!');
+                    delete document.getElementById('collection-form').dataset.collectionId;
+                } else {
+                    const { error } = await window.supabase.from('collections').insert(formData);
+                    if (error) throw error;
+                    console.log('✓ Collection inserted into Supabase');
+                    alert('Collection added successfully!');
                 }
-                
-                const accessToken = sessionData.session.access_token;
-                
-                const response = await fetch(`${supabaseUrl}/rest/v1/collections`, {
-                    method: 'POST',
-                    headers: {
-                        apikey: supabaseKey,
-                        Authorization: `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json',
-                        Prefer: 'return=minimal'
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Supabase insert failed: ${response.status} ${errorText}`);
+            } else {
+                throw new Error('Supabase is unavailable, not initialized, or this item is local only.');
+            }
+        } catch (error) {
+            console.warn('⚠️ Supabase collection save failed, falling back to localStorage:', error);
+            const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
+            if (collectionId) {
+                const index = localCollections.findIndex(c => c.id === collectionId);
+                if (index >= 0) {
+                    localCollections[index] = { ...localCollections[index], ...formData };
+                } else {
+                    localCollections.push({ id: collectionId, ...formData });
                 }
-
-                console.log('✓ Collection inserted into Supabase with authenticated session');
-                alert('Collection added successfully!');
-            } catch (error) {
-                console.warn('⚠️ Supabase insert failed for collections, falling back to localStorage:', error);
-                const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
+            } else {
                 const newCollection = { id: 'local_' + Date.now(), ...formData };
                 localCollections.push(newCollection);
-                localStorage.setItem('collections', JSON.stringify(localCollections));
-                alert('Collection added locally because Supabase failed.');
             }
+            localStorage.setItem('collections', JSON.stringify(localCollections));
+            alert('Collection saved locally because Supabase failed.');
         }
         
         closeCollectionModal();
@@ -527,36 +520,32 @@ document.getElementById('collection-form')?.addEventListener('submit', async (e)
 
 async function deleteCollection(collectionId) {
     if (confirm('Are you sure you want to delete this collection?')) {
+        const localOnly = collectionId && collectionId.toString().startsWith('local_');
+
         try {
-            // Get current authenticated session
-            const { data: sessionData, error: sessionError } = await window.supabase.auth.getSession();
-            if (sessionError || !sessionData.session) {
-                throw new Error('Admin authentication required. Please log in again.');
-            }
-            
-            const accessToken = sessionData.session.access_token;
-            
-            const response = await fetch(`${supabaseUrl}/rest/v1/collections?id=eq.${encodeURIComponent(collectionId)}`, {
-                method: 'DELETE',
-                headers: {
-                    apikey: supabaseKey,
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
+            if (!localOnly) {
+                const canUseSupabase = window.supabase && typeof window.supabase.from === 'function';
+                if (canUseSupabase) {
+                    const { error } = await window.supabase.from('collections').delete().eq('id', collectionId);
+                    if (error) throw error;
+                    console.log('✓ Collection deleted from Supabase');
+                    alert('Collection deleted successfully!');
+                } else {
+                    throw new Error('Supabase is unavailable or not initialized.');
                 }
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Delete failed: ${response.status} ${errorText}`);
+            } else {
+                throw new Error('This collection exists only locally.');
             }
-
-            console.log('✓ Collection deleted from Supabase with authenticated session');
-            alert('Collection deleted successfully!');
-            await loadCollections();
-            displayCollections();
         } catch (error) {
-            alert('Error deleting collection: ' + error.message);
+            console.warn('⚠️ Supabase collection delete failed, removing from localStorage instead:', error);
+            const localCollections = JSON.parse(localStorage.getItem('collections') || '[]');
+            const filtered = localCollections.filter(c => c.id !== collectionId);
+            localStorage.setItem('collections', JSON.stringify(filtered));
+            alert('Collection removed locally because Supabase delete failed.');
         }
+
+        await loadCollections();
+        displayCollections();
     }
 }
 
@@ -585,10 +574,10 @@ async function loadOrders() {
         const querySnapshot = await db.collection('orders').get();
         allOrders = [];
         querySnapshot.forEach((doc) => {
-            allOrders.push({
+            allOrders.push(normalizeOrder({
                 id: doc.id,
                 ...doc.data()
-            });
+            }));
         });
         // Sort by createdAt in descending order
         allOrders.sort((a, b) => {
@@ -597,8 +586,18 @@ async function loadOrders() {
             return dateB - dateA;
         });
     } catch (error) {
-        console.error('Error loading orders:', error);
-        allOrders = [];
+        if (isSupabaseMissingTableError(error)) {
+            console.warn('⚠️ Supabase orders table not found. Create the orders table in Supabase to restore this data.');
+        } else {
+            console.warn('⚠️ Orders load failed, falling back to local storage:', error);
+        }
+        const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        allOrders = localOrders.map(normalizeOrder);
+        allOrders.sort((a, b) => {
+            const dateA = new Date(a.createdAt || 0);
+            const dateB = new Date(b.createdAt || 0);
+            return dateB - dateA;
+        });
     }
 }
 
@@ -612,7 +611,7 @@ function displayOrders() {
     
     tbody.innerHTML = allOrders.map(order => `
         <tr>
-            <td><strong>${order.id.substring(0, 8)}</strong></td>
+            <td><strong>${shortId(order.id)}</strong></td>
             <td>${order.customerName || 'N/A'}</td>
             <td>${order.customerPhone || 'N/A'}</td>
             <td>₹${order.total || 0}</td>
@@ -771,7 +770,7 @@ function displayPendingPayments() {
     
     tbody.innerHTML = pendingOrders.map(order => `
         <tr>
-            <td><strong>${order.id.substring(0, 8)}</strong></td>
+            <td><strong>${shortId(order.id)}</strong></td>
             <td>${order.customerName}</td>
             <td>₹${order.total}</td>
             <td>
@@ -802,7 +801,7 @@ async function verifyPayment(orderId) {
             });
             
             // Send WhatsApp notification
-            const message = `Hi ${order.customerName},\n\nYour payment of ₹${order.total} has been verified.\n\nYour order is confirmed!\n\nOrder ID: ${order.id.substring(0, 8)}\n\nThank you for shopping with Klyra Studio!\n\nFor any queries, call us at ${CONTACT_WHATSAPP}`;
+            const message = `Hi ${order.customerName},\n\nYour payment of ₹${order.total} has been verified.\n\nYour order is confirmed!\n\nOrder ID: ${shortId(order.id)}\n\nThank you for shopping with Klyra Studio!\n\nFor any queries, call us at ${CONTACT_WHATSAPP}`;
             sendWhatsAppMessage(order.customerPhone, message);
             
             alert('Payment verified! WhatsApp notification sent.');
@@ -826,7 +825,7 @@ async function deleteOrder(orderId) {
     const order = allOrders.find(o => o.id === orderId);
     if (!order) return;
     
-    if (confirm(`Delete order #${orderId.substring(0, 8)} from ${order.customerName}?\n\nAmount: ₹${order.total}\n\nThis action cannot be undone.`)) {
+    if (confirm(`Delete order #${shortId(orderId)} from ${order.customerName}?\n\nAmount: ₹${order.total}\n\nThis action cannot be undone.`)) {
         try {
             console.log('🗑️  Deleting order:', orderId);
             await db.collection('orders').doc(orderId).delete();
@@ -849,14 +848,19 @@ async function loadUsers() {
         const querySnapshot = await db.collection('users').get();
         allUsers = [];
         querySnapshot.forEach((doc) => {
-            allUsers.push({
+            allUsers.push(normalizeUser({
                 id: doc.id,
                 ...doc.data()
-            });
+            }));
         });
     } catch (error) {
-        console.error('Error loading users:', error);
-        allUsers = [];
+        if (isSupabaseMissingTableError(error)) {
+            console.warn('⚠️ Supabase users table not found. Create the users table in Supabase to restore this data.');
+        } else {
+            console.warn('⚠️ Users load failed, falling back to local storage:', error);
+        }
+        const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        allUsers = localUsers.map(normalizeUser);
     }
 }
 
@@ -876,7 +880,7 @@ function displayUsers() {
         
         return `
             <tr>
-                <td>${user.id.substring(0, 8)}</td>
+                <td>${shortId(user.id)}</td>
                 <td>${user.phone}</td>
                 <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                 <td>${userOrders}</td>
@@ -924,7 +928,7 @@ function loadRecentOrders() {
     
     tbody.innerHTML = recent.map(order => `
         <tr>
-            <td><strong>${order.id.substring(0, 8)}</strong></td>
+            <td><strong>${shortId(order.id)}</strong></td>
             <td>${order.customerName}</td>
             <td>₹${order.total}</td>
             <td><span class="status-badge status-${(order.status || 'pending').toLowerCase()}">${order.status || 'Pending'}</span></td>
@@ -969,7 +973,7 @@ function closePaymentModal() {
 function sendShippingNotification(phone, customerName, orderId, trackingId) {
     // Format phone number for WhatsApp
     const cleanPhone = phone.replace(/\D/g, '');
-    const message = `Hi ${customerName},\n\n📦 Your Klyra Studio order is on the way!\n\nOrder ID: ${orderId.substring(0, 8)}\n🚚 Tracking ID: ${trackingId || 'Will be shared soon'}\n\nYour jewelry will be delivered with utmost care.\n\nFor any queries, reach us on WhatsApp: ${CONTACT_WHATSAPP}\n\n✨ Thank you for shopping with Klyra Studio!`;
+    const message = `Hi ${customerName},\n\n📦 Your Klyra Studio order is on the way!\n\nOrder ID: ${shortId(orderId)}\n🚚 Tracking ID: ${trackingId || 'Will be shared soon'}\n\nYour jewelry will be delivered with utmost care.\n\nFor any queries, reach us on WhatsApp: ${CONTACT_WHATSAPP}\n\n✨ Thank you for shopping with Klyra Studio!`;
     
     // Copy to clipboard
     navigator.clipboard.writeText(message).catch(() => {
@@ -988,7 +992,7 @@ function sendShippingNotification(phone, customerName, orderId, trackingId) {
 
 function sendDeliveryNotification(phone, customerName, orderId) {
     const cleanPhone = phone.replace(/\D/g, '');
-    const message = `Hi ${customerName},\n\n✅ Your Klyra Studio order has been delivered!\n\nOrder ID: ${orderId.substring(0, 8)}\n\nPlease confirm receipt and let us know about your experience.\n\n💎 We hope you love your jewelry!\n\n✨ Thank you for shopping with Klyra Studio!\n\nFor any queries, reach us on WhatsApp: ${CONTACT_WHATSAPP}`;
+    const message = `Hi ${customerName},\n\n✅ Your Klyra Studio order has been delivered!\n\nOrder ID: ${shortId(orderId)}\n\nPlease confirm receipt and let us know about your experience.\n\n💎 We hope you love your jewelry!\n\n✨ Thank you for shopping with Klyra Studio!\n\nFor any queries, reach us on WhatsApp: ${CONTACT_WHATSAPP}`;
     
     // Copy to clipboard
     navigator.clipboard.writeText(message).catch(() => {
