@@ -361,10 +361,11 @@ function filterProducts(event, collectionId) {
 
 // ===== CART FUNCTIONS =====
 function addToCart(productId) {
-    const product = products.find(p => p.id === productId);
+    const normalizedId = String(productId);
+    const product = products.find(p => String(p.id) === normalizedId);
     if (!product) return;
 
-    const existingItem = cart.find(item => item.id === productId);
+    const existingItem = cart.find(item => String(item.id) === normalizedId);
     
     if (existingItem) {
         existingItem.quantity++;

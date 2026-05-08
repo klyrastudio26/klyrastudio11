@@ -28,9 +28,12 @@ async function waitForDB() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadCheckoutData();
-    setupPaymentScreenshotUpload();
-    generateUPIQRCode();
+    const isCheckoutPage = document.getElementById('order-items');
+    if (isCheckoutPage) {
+        loadCheckoutData();
+        setupPaymentScreenshotUpload();
+        generateUPIQRCode();
+    }
 });
 
 function loadCheckoutData() {

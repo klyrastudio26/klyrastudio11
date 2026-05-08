@@ -32,10 +32,14 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 2px;
+    gap: 0;
 }
 
 /* Cart button outside menu - always visible */
+.navbar .container > .cart-icon {
+    margin-left: auto;
+}
+
 .navbar .cart-icon {
     display: flex !important;
     align-items: center;
@@ -46,6 +50,10 @@ body {
     cursor: pointer;
     transition: color 0.3s ease;
     z-index: 1001;
+}
+
+.menu-toggle {
+    margin-left: 8px;
 }
 
 .navbar .cart-icon:hover {
