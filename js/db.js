@@ -98,7 +98,15 @@ class SupabaseQuery {
       query = query.eq(this.field, this.value);
     }
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      const message = error.message || '';
+      if (error.code === '42703' || /column .* does not exist/i.test(message)) {
+        console.warn('Supabase query failed, falling back to local storage for', this.table, this.field);
+        const localQuery = new LocalQuery(this.table, this.field, this.operator, this.value, null, Promise.resolve(), false);
+        return localQuery.get();
+      }
+      throw error;
+    }
     const docs = data.map(item => ({
       id: item.id,
       data: () => {

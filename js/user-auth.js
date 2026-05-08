@@ -14,7 +14,29 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     // In production, use proper authentication
     try {
         // Check if user exists in Firestore
-        const querySnapshot = await db.collection('users').where('phone', '==', phone).get();
+        let querySnapshot;
+        try {
+            querySnapshot = await db.collection('users').where('phone', '==', phone).get();
+        } catch (error) {
+            const message = error && (error.message || error.details || '');
+            if (error && (error.code === '42703' || /column .* does not exist/i.test(message))) {
+                const users = JSON.parse(localStorage.getItem('users') || '[]');
+                const matched = users.filter(u => u.phone === phone);
+                querySnapshot = {
+                    empty: matched.length === 0,
+                    docs: matched.map(item => ({
+                        id: item.id,
+                        data: () => {
+                            const copy = { ...item };
+                            delete copy.id;
+                            return copy;
+                        }
+                    }))
+                };
+            } else {
+                throw error;
+            }
+        }
         
         if (querySnapshot.empty) {
             showError('User not found. Please sign up first.');

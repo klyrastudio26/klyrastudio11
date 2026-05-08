@@ -408,8 +408,30 @@ if (document.getElementById('signup-form')) {
             }
 
             // Check if user already exists
-            const existingUser = await db.collection('users').where('phone', '==', phone).get();
-            
+            let existingUser;
+            try {
+                existingUser = await db.collection('users').where('phone', '==', phone).get();
+            } catch (error) {
+                const message = error && (error.message || error.details || '');
+                if (error && (error.code === '42703' || /column .* does not exist/i.test(message))) {
+                    const users = JSON.parse(localStorage.getItem('users') || '[]');
+                    const matched = users.filter(u => u.phone === phone);
+                    existingUser = {
+                        empty: matched.length === 0,
+                        docs: matched.map(item => ({
+                            id: item.id,
+                            data: () => {
+                                const copy = { ...item };
+                                delete copy.id;
+                                return copy;
+                            }
+                        }))
+                    };
+                } else {
+                    throw error;
+                }
+            }
+
             if (!existingUser.empty) {
                 showSignupError('Phone number already registered');
                 return;
@@ -466,4 +488,3 @@ function showSignupSuccess(message) {
 window.goToStep = goToStep;
 window.validateShippingForm = validateShippingForm;
 window.submitOrder = submitOrder;
-window.proceedToCheckout = proceedToCheckout;
