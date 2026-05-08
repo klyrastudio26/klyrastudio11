@@ -73,12 +73,30 @@ class SupabaseDocument {
 
   async set(data) {
     const { error } = await window.supabase.from(this.table).upsert({ id: this.docId, ...data });
-    if (error) throw error;
+    if (error) {
+      const message = error.message || '';
+      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
+        console.warn('Supabase upsert failed, falling back to local storage for', this.table, error);
+        const coreDb = window.db || globalThis.db;
+        const localDoc = new LocalDocument(this.table, this.docId, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
+        return localDoc.set(data);
+      }
+      throw error;
+    }
   }
 
   async update(data) {
     const { error } = await window.supabase.from(this.table).update(data).eq('id', this.docId);
-    if (error) throw error;
+    if (error) {
+      const message = error.message || '';
+      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
+        console.warn('Supabase update failed, falling back to local storage for', this.table, error);
+        const coreDb = window.db || globalThis.db;
+        const localDoc = new LocalDocument(this.table, this.docId, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
+        return localDoc.update(data);
+      }
+      throw error;
+    }
   }
 
   async delete() {
@@ -114,7 +132,7 @@ class SupabaseQuery {
     const { data, error } = await query;
     if (error) {
       const message = error.message || '';
-      if (error.code === '42703' || /column .* does not exist/i.test(message)) {
+      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
         console.warn('Supabase query failed, falling back to local storage for', this.table, this.field);
         const localQuery = new LocalQuery(this.table, this.field, this.operator, this.value, null, Promise.resolve(), false);
         return localQuery.get();
