@@ -13,6 +13,13 @@ class SupabaseCollection {
   async add(data) {
     const { data: result, error } = await window.supabase.from(this.table).insert(data, { returning: 'minimal' });
     if (error) {
+      const message = error.message || '';
+      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
+        console.warn('Supabase insert failed, falling back to local storage for', this.table, error);
+        const coreDb = window.db || globalThis.db;
+        const localCollection = new LocalCollection(this.table, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
+        return localCollection.add(data);
+      }
       console.error('❌ Supabase error adding to', this.table, ':', error);
       throw error;
     }
@@ -27,6 +34,13 @@ class SupabaseCollection {
   async get() {
     const { data, error } = await window.supabase.from(this.table).select('*');
     if (error) {
+      const message = error.message || '';
+      if (error.code === '42703' || /column .* does not exist/i.test(message) || /schema cache/i.test(message) || /relation .* does not exist/i.test(message)) {
+        console.warn('Supabase fetch failed, falling back to local storage for', this.table, error);
+        const coreDb = window.db || globalThis.db;
+        const localCollection = new LocalCollection(this.table, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
+        return localCollection.get();
+      }
       console.error('❌ Supabase error fetching from', this.table, ':', error);
       throw error;
     }
