@@ -18,6 +18,34 @@ function shouldFallbackToLocalStorage(error) {
   );
 }
 
+function getSupabaseMissingColumns(error) {
+  if (!error) return [];
+  const message = ((error.message || '') + ' ' + (error.details || '') + ' ' + (error.hint || '')).trim();
+  const columns = [];
+  const regexes = [
+    /Could not find the ['"]([^'"]+)['"] column/gi,
+    /column ['"]([^'"]+)['"] does not exist/gi,
+    /column ([a-zA-Z0-9_]+) does not exist/gi
+  ];
+  regexes.forEach(regex => {
+    for (const match of message.matchAll(regex)) {
+      if (match[1]) columns.push(match[1]);
+    }
+  });
+  return Array.from(new Set(columns));
+}
+
+function stripSupabaseColumns(data, columns) {
+  if (!columns?.length) return data;
+  const cleaned = { ...data };
+  columns.forEach((column) => {
+    if (column in cleaned) {
+      delete cleaned[column];
+    }
+  });
+  return cleaned;
+}
+
 // Supabase classes if available
 class SupabaseCollection {
   constructor(name) {
@@ -25,7 +53,19 @@ class SupabaseCollection {
   }
 
   async add(data) {
-    const { data: result, error } = await window.supabase.from(this.table).insert(data, { returning: 'minimal' });
+    let payload = data;
+    let result, error;
+
+    ({ data: result, error } = await window.supabase.from(this.table).insert(payload, { returning: 'minimal' }));
+    if (error) {
+      const missingColumns = getSupabaseMissingColumns(error);
+      if (missingColumns.length > 0) {
+        payload = stripSupabaseColumns(payload, missingColumns);
+        console.warn('Retrying Supabase insert after removing missing columns:', missingColumns, 'for', this.table);
+        ({ data: result, error } = await window.supabase.from(this.table).insert(payload, { returning: 'minimal' }));
+      }
+    }
+
     if (error) {
       if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase insert failed, falling back to local storage for', this.table, error);
@@ -37,7 +77,7 @@ class SupabaseCollection {
       throw error;
     }
     console.log('✓ Added item to Supabase table:', this.table, '(minimal return)');
-    return { id: null, data: () => data };
+    return { id: null, data: () => payload };
   }
 
   doc(id) {
@@ -84,7 +124,19 @@ class SupabaseDocument {
   }
 
   async set(data) {
-    const { error } = await window.supabase.from(this.table).upsert({ id: this.docId, ...data });
+    let payload = { id: this.docId, ...data };
+    let error;
+
+    ({ error } = await window.supabase.from(this.table).upsert(payload));
+    if (error) {
+      const missingColumns = getSupabaseMissingColumns(error);
+      if (missingColumns.length > 0) {
+        payload = stripSupabaseColumns(payload, missingColumns);
+        console.warn('Retrying Supabase upsert after removing missing columns:', missingColumns, 'for', this.table);
+        ({ error } = await window.supabase.from(this.table).upsert(payload));
+      }
+    }
+
     if (error) {
       if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase upsert failed, falling back to local storage for', this.table, error);
@@ -97,7 +149,19 @@ class SupabaseDocument {
   }
 
   async update(data) {
-    const { error } = await window.supabase.from(this.table).update(data).eq('id', this.docId);
+    let payload = data;
+    let error;
+
+    ({ error } = await window.supabase.from(this.table).update(payload).eq('id', this.docId));
+    if (error) {
+      const missingColumns = getSupabaseMissingColumns(error);
+      if (missingColumns.length > 0) {
+        payload = stripSupabaseColumns(payload, missingColumns);
+        console.warn('Retrying Supabase update after removing missing columns:', missingColumns, 'for', this.table);
+        ({ error } = await window.supabase.from(this.table).update(payload).eq('id', this.docId));
+      }
+    }
+
     if (error) {
       if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase update failed, falling back to local storage for', this.table, error);
