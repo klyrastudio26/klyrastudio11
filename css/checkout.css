@@ -26,25 +26,30 @@ body {
     color: #ffffff;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    align-items: center;
+    flex-wrap: nowrap;
 }
 
 .checkout-header .logo {
     display: flex;
     align-items: center;
     gap: 16px;
+    margin-bottom: 0;
 }
 
 .steps {
     display: flex;
+    flex-direction: row;
+    align-items: center;
     gap: 18px;
-    flex-wrap: wrap;
-    margin-top: 10px;
+    flex-wrap: nowrap;
+    margin-top: 0;
+    white-space: nowrap;
+    overflow-x: auto;
 }
 
 .step {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -53,6 +58,7 @@ body {
     border-radius: 16px;
     min-width: 110px;
     text-align: center;
+    flex: 0 0 auto;
 }
 
 .step.active {
@@ -72,7 +78,7 @@ body {
     font-size: 24px;
     color: #d4af37;
     letter-spacing: 2px;
-    margin-bottom: 30px;
+    margin-bottom: 0;
 }
 
 .brand-logo {
