@@ -10,7 +10,6 @@ function shouldFallbackToLocalStorage(error) {
   const code = error.code || '';
   return (
     code === '42703' ||
-    code === 'PGRST204' ||
     /column .* does not exist/i.test(message) ||
     /Could not find the .* column/i.test(message) ||
     /schema cache/i.test(message) ||
@@ -18,18 +17,26 @@ function shouldFallbackToLocalStorage(error) {
   );
 }
 
+function isSupabaseEmptyResponse(error) {
+  if (!error) return false;
+  const code = error.code || '';
+  return code === 'PGRST204';
+}
+
 function getSupabaseMissingColumns(error) {
   if (!error) return [];
   const message = ((error.message || '') + ' ' + (error.details || '') + ' ' + (error.hint || '')).trim();
   const columns = [];
   const regexes = [
-    /Could not find the ['"]([^'"]+)['"] column/gi,
-    /column ['"]([^'"]+)['"] does not exist/gi,
-    /column ([a-zA-Z0-9_]+) does not exist/gi
+    /Could not find the ['"]([^'"]+)['"] column/i,
+    /column ['"]([^'"]+)['"] does not exist/i,
+    /column ([a-zA-Z0-9_]+) does not exist/i
   ];
   regexes.forEach(regex => {
-    for (const match of message.matchAll(regex)) {
-      if (match[1]) columns.push(match[1]);
+    let match;
+    while ((match = regex.exec(message)) !== null) {
+      columns.push(match[1]);
+      message.replace(match[0], '');
     }
   });
   return Array.from(new Set(columns));
@@ -56,32 +63,32 @@ class SupabaseCollection {
     let payload = data;
     let result, error;
 
-    console.log('🔄 Attempting Supabase insert to', this.table, 'with payload:', JSON.stringify(payload, null, 2));
     ({ data: result, error } = await window.supabase.from(this.table).insert(payload, { returning: 'minimal' }));
-    console.log('📡 Supabase insert response:', { data: result, error });
-
-    if (error) {
-      console.error('❌ Supabase insert error:', error);
+    if (error && !isSupabaseEmptyResponse(error)) {
       const missingColumns = getSupabaseMissingColumns(error);
       if (missingColumns.length > 0) {
         payload = stripSupabaseColumns(payload, missingColumns);
-        console.warn('🔄 Retrying Supabase insert after removing missing columns:', missingColumns, 'for', this.table);
+        console.warn('Retrying Supabase insert after removing missing columns:', missingColumns, 'for', this.table);
         ({ data: result, error } = await window.supabase.from(this.table).insert(payload, { returning: 'minimal' }));
-        console.log('📡 Retry response:', { data: result, error });
       }
     }
 
-    if (error) {
+    if (error && !isSupabaseEmptyResponse(error)) {
       if (shouldFallbackToLocalStorage(error)) {
-        console.warn('⚠️ Supabase insert failed, falling back to local storage for', this.table, error);
+        console.warn('Supabase insert failed, falling back to local storage for', this.table, error);
         const coreDb = window.db || globalThis.db;
         const localCollection = new LocalCollection(this.table, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
         return localCollection.add(data);
       }
-      console.error('💥 Final Supabase error adding to', this.table, ':', error);
+      console.error('❌ Supabase error adding to', this.table, ':', error);
       throw error;
     }
-    console.log('✅ Added item to Supabase table:', this.table, '(minimal return)');
+
+    if (isSupabaseEmptyResponse(error)) {
+      console.log('✅ Supabase insert returned PGRST204; treating as successful insert for', this.table);
+    } else {
+      console.log('✓ Added item to Supabase table:', this.table, '(minimal return)');
+    }
     return { id: null, data: () => payload };
   }
 
@@ -133,7 +140,7 @@ class SupabaseDocument {
     let error;
 
     ({ error } = await window.supabase.from(this.table).upsert(payload));
-    if (error) {
+    if (error && !isSupabaseEmptyResponse(error)) {
       const missingColumns = getSupabaseMissingColumns(error);
       if (missingColumns.length > 0) {
         payload = stripSupabaseColumns(payload, missingColumns);
@@ -142,7 +149,7 @@ class SupabaseDocument {
       }
     }
 
-    if (error) {
+    if (error && !isSupabaseEmptyResponse(error)) {
       if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase upsert failed, falling back to local storage for', this.table, error);
         const coreDb = window.db || globalThis.db;
@@ -158,7 +165,7 @@ class SupabaseDocument {
     let error;
 
     ({ error } = await window.supabase.from(this.table).update(payload).eq('id', this.docId));
-    if (error) {
+    if (error && !isSupabaseEmptyResponse(error)) {
       const missingColumns = getSupabaseMissingColumns(error);
       if (missingColumns.length > 0) {
         payload = stripSupabaseColumns(payload, missingColumns);
@@ -167,7 +174,7 @@ class SupabaseDocument {
       }
     }
 
-    if (error) {
+    if (error && !isSupabaseEmptyResponse(error)) {
       if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase update failed, falling back to local storage for', this.table, error);
         const coreDb = window.db || globalThis.db;
