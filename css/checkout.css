@@ -24,12 +24,47 @@ body {
     background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
     padding: 30px;
     color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
 
 .checkout-header .logo {
     display: flex;
     align-items: center;
     gap: 16px;
+}
+
+.steps {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    min-width: 110px;
+    text-align: center;
+}
+
+.step.active {
+    background: #ffffff;
+    color: #1a1a1a;
+}
+
+.step-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 8px;
 }
 
 .logo h1 {

@@ -143,7 +143,8 @@ class SupabaseQuery {
     if (error) {
       if (shouldFallbackToLocalStorage(error)) {
         console.warn('Supabase query failed, falling back to local storage for', this.table, this.field, error);
-        const localQuery = new LocalQuery(this.table, this.field, this.operator, this.value, null, Promise.resolve(), false);
+        const coreDb = window.db || globalThis.db;
+        const localQuery = new LocalQuery(this.table, this.field, this.operator, this.value, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
         return localQuery.get();
       }
       throw error;
