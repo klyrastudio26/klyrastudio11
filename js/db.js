@@ -56,27 +56,32 @@ class SupabaseCollection {
     let payload = data;
     let result, error;
 
+    console.log('🔄 Attempting Supabase insert to', this.table, 'with payload:', JSON.stringify(payload, null, 2));
     ({ data: result, error } = await window.supabase.from(this.table).insert(payload, { returning: 'minimal' }));
+    console.log('📡 Supabase insert response:', { data: result, error });
+
     if (error) {
+      console.error('❌ Supabase insert error:', error);
       const missingColumns = getSupabaseMissingColumns(error);
       if (missingColumns.length > 0) {
         payload = stripSupabaseColumns(payload, missingColumns);
-        console.warn('Retrying Supabase insert after removing missing columns:', missingColumns, 'for', this.table);
+        console.warn('🔄 Retrying Supabase insert after removing missing columns:', missingColumns, 'for', this.table);
         ({ data: result, error } = await window.supabase.from(this.table).insert(payload, { returning: 'minimal' }));
+        console.log('📡 Retry response:', { data: result, error });
       }
     }
 
     if (error) {
       if (shouldFallbackToLocalStorage(error)) {
-        console.warn('Supabase insert failed, falling back to local storage for', this.table, error);
+        console.warn('⚠️ Supabase insert failed, falling back to local storage for', this.table, error);
         const coreDb = window.db || globalThis.db;
         const localCollection = new LocalCollection(this.table, coreDb?.db, coreDb?.initPromise, coreDb?.useIndexedDB ?? false);
         return localCollection.add(data);
       }
-      console.error('❌ Supabase error adding to', this.table, ':', error);
+      console.error('💥 Final Supabase error adding to', this.table, ':', error);
       throw error;
     }
-    console.log('✓ Added item to Supabase table:', this.table, '(minimal return)');
+    console.log('✅ Added item to Supabase table:', this.table, '(minimal return)');
     return { id: null, data: () => payload };
   }
 
