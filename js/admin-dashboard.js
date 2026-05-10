@@ -414,8 +414,19 @@ function displayCollections() {
 function normalizeOrder(raw) {
     return {
         id: raw.id,
+        orderCode: raw.orderCode || raw.order_code || raw.code || '',
         customerName: raw.customerName || raw.customer_name || raw.customer || '',
         customerPhone: raw.customerPhone || raw.customer_phone || raw.phone || '',
+        items: raw.items || raw.products || [],
+        paymentScreenshot: raw.paymentScreenshot || raw.payment_screenshot || '',
+        shipping: raw.shipping || raw.shipping_details || null,
+        address: raw.address || raw.address_line || raw.customer_address || '',
+        city: raw.city || raw.customer_city || '',
+        state: raw.state || raw.customer_state || '',
+        postalCode: raw.postalCode || raw.postal_code || raw.zip || '',
+        country: raw.country || raw.customer_country || '',
+        subtotal: parseFloat(raw.subtotal ?? raw.subtotal_amount ?? 0) || 0,
+        tax: parseFloat(raw.tax ?? 0) || 0,
         total: parseFloat(raw.total ?? raw.total_amount ?? raw.amount ?? 0) || 0,
         status: raw.status || raw.order_status || raw.orderStatus || 'pending',
         paymentStatus: raw.paymentStatus || raw.payment_status || raw.paymentStatus || 'pending',
@@ -641,11 +652,13 @@ async function verifyOrderPayment(orderId) {
                 localStorage.setItem('orders', JSON.stringify(orders));
             }
             
-            // Update in IndexedDB
+            // Update in IndexedDB / Supabase
             await db.collection('orders').doc(orderId).update({
                 paymentStatus: 'verified',
+                payment_status: 'verified',
                 verifiedAt: new Date().toISOString(),
-                status: 'confirmed'
+                status: 'confirmed',
+                order_status: 'confirmed'
             });
             
             allOrders[index].paymentStatus = 'verified';
@@ -675,10 +688,12 @@ async function markOrderShipped(orderId) {
                 localStorage.setItem('orders', JSON.stringify(orders));
             }
             
-            // Update in IndexedDB
+            // Update in IndexedDB / Supabase
             await db.collection('orders').doc(orderId).update({
                 status: 'shipped',
+                order_status: 'shipped',
                 trackingId: trackingId || 'N/A',
+                tracking_id: trackingId || 'N/A',
                 shippedAt: new Date().toISOString()
             });
             
@@ -712,9 +727,10 @@ async function markOrderDelivered(orderId) {
                 localStorage.setItem('orders', JSON.stringify(orders));
             }
             
-            // Update in IndexedDB
+            // Update in IndexedDB / Supabase
             await db.collection('orders').doc(orderId).update({
                 status: 'delivered',
+                order_status: 'delivered',
                 deliveredAt: new Date().toISOString()
             });
             
@@ -795,9 +811,12 @@ async function verifyPayment(orderId) {
             // Update payment status
             await db.collection('orders').doc(orderId).update({
                 paymentStatus: 'verified',
+                payment_status: 'verified',
                 status: 'confirmed',
+                order_status: 'confirmed',
                 verifiedAt: new Date().toISOString(),
-                verifiedBy: localStorage.getItem('admin_email')
+                verifiedBy: localStorage.getItem('admin_email'),
+                verified_by: localStorage.getItem('admin_email')
             });
             
             // Send WhatsApp notification

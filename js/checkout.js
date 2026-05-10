@@ -287,50 +287,59 @@ async function submitOrder() {
         // Upload payment screenshot
         const screenshotURL = await uploadPaymentScreenshot(fileInput.files[0]);
 
-        // Generate order ID
-        const orderId = 'KLY' + Date.now();
+        // Generate human-readable order code for customers
+        const orderCode = 'KLY' + Date.now();
 
-        // Create order with all details
+        // Create order with all supported fields and fallback keys for Supabase schema
         const orderData = {
-            id: orderId,
+            orderCode,
             items: checkoutData.items,
+            products: checkoutData.items,
             subtotal: parseFloat(checkoutData.subtotal),
             tax: parseFloat(checkoutData.tax),
             total: parseFloat(checkoutData.total),
+            total_amount: parseFloat(checkoutData.total),
             customerName: shippingData.fullName,
+            customer_name: shippingData.fullName,
             customerPhone: shippingData.phone,
+            customer_phone: shippingData.phone,
             customerEmail: shippingData.email,
+            customer_email: shippingData.email,
             address: shippingData.address,
             city: shippingData.city,
             state: shippingData.state,
             postalCode: shippingData.postalCode,
+            postal_code: shippingData.postalCode,
             country: shippingData.country,
             shipping: shippingData,
             paymentScreenshot: screenshotURL,
-            status: 'pending',
+            payment_status: 'pending',
             paymentStatus: 'pending',
+            status: 'pending',
+            order_status: 'pending',
             createdAt: new Date().toISOString(),
+            created_at: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             upiId: PAYMENT_UPI,
             trackingId: null
         };
 
-        console.log('📦 Saving order to IndexedDB:', orderId);
+        console.log('📦 Saving order to Supabase / local fallback:', orderCode);
         console.log('   Subtotal:', orderData.subtotal);
         console.log('   Tax:', orderData.tax);
         console.log('   Total:', orderData.total);
         console.log('   Phone:', orderData.customerPhone);
         console.log('   Screenshot:', screenshotURL ? '✓ Uploaded' : '❌ Missing');
 
-        // Save to database (IndexedDB with localStorage fallback)
-        await db.collection('orders').doc(orderId).set(orderData);
+        // Save to database (Supabase with local fallback)
+        await db.collection('orders').add(orderData);
         console.log('✓ Order saved successfully!');
 
         // Send WhatsApp notification
         sendOrderWhatsApp(shippingData.phone, orderData);
 
         // Show success modal
-        showSuccessModal(orderId, checkoutData.total);
+        showSuccessModal(orderCode, checkoutData.total);
 
         // Clear cart and session
         localStorage.removeItem('klyra_cart');
@@ -362,15 +371,15 @@ async function uploadPaymentScreenshot(file) {
 }
 
 function sendOrderWhatsApp(phone, orderData) {
-    const message = `Hi ${orderData.customerName},\n\n✓ Your order has been placed successfully!\n\n📦 Order ID: ${orderData.id}\n💰 Amount: ₹${(orderData.total || 0).toFixed(2)} (including shipping)\n\n⏳ Status: Awaiting payment verification\n\n📤 You have uploaded the payment screenshot. Our admin will verify it shortly.\n\n🎁 Thank you for shopping with Klyra Studio!\n\nFor any queries, call: ${CONTACT_WHATSAPP}`;
+    const message = `Hi ${orderData.customerName},\n\n✓ Your order has been placed successfully!\n\n📦 Order Code: ${orderData.orderCode || orderData.id || 'N/A'}\n💰 Amount: ₹${(orderData.total || 0).toFixed(2)} (including shipping)\n\n⏳ Status: Awaiting payment verification\n\n📤 You have uploaded the payment screenshot. Our admin will verify it shortly.\n\n🎁 Thank you for shopping with Klyra Studio!\n\nFor any queries, call: ${CONTACT_WHATSAPP}`;
     
     console.log('📱 Order confirmation message ready for:', phone);
     console.log('Message:', message);
 }
 
-function showSuccessModal(orderId, total) {
+function showSuccessModal(orderCode, total) {
     const modal = document.getElementById('success-modal');
-    document.getElementById('order-id').textContent = orderId;
+    document.getElementById('order-id').textContent = orderCode;
     document.getElementById('order-amount').textContent = `₹${total}`;
     document.getElementById('success-message').textContent = 
         'Your payment screenshot has been received. Our admin will verify the payment and confirm your order soon. You will receive a WhatsApp notification once verified.';
